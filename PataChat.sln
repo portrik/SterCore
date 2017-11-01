@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "PataChat\Server.csproj", "{276B5A11-99A5-456C-A095-BCD5D59E67D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klient", "Klient\Klient.csproj", "{2DA3C1B2-E538-4FFD-849A-554E1BADA9A9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpolecneSoubory", "SpolecneSoubory\SpolecneSoubory.csproj", "{0CF4C06D-0DA7-43D6-B77E-AF70909971C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +21,6 @@ Global
 		{2DA3C1B2-E538-4FFD-849A-554E1BADA9A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DA3C1B2-E538-4FFD-849A-554E1BADA9A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DA3C1B2-E538-4FFD-849A-554E1BADA9A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0CF4C06D-0DA7-43D6-B77E-AF70909971C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0CF4C06D-0DA7-43D6-B77E-AF70909971C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0CF4C06D-0DA7-43D6-B77E-AF70909971C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0CF4C06D-0DA7-43D6-B77E-AF70909971C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

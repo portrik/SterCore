@@ -70,6 +70,7 @@
             this.txtServerPort.TabIndex = 3;
             this.txtServerPort.Text = "8888";
             this.txtServerPort.UseSystemPasswordChar = false;
+            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
             // 
             // BtnServerStart
             // 
@@ -92,7 +93,7 @@
             this.BtnServerStop.AutoSize = true;
             this.BtnServerStop.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BtnServerStop.Depth = 0;
-            this.BtnServerStop.Location = new System.Drawing.Point(33, 323);
+            this.BtnServerStop.Location = new System.Drawing.Point(33, 324);
             this.BtnServerStop.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.BtnServerStop.MouseState = MaterialSkin.MouseState.HOVER;
             this.BtnServerStop.Name = "BtnServerStop";
@@ -138,6 +139,7 @@
             this.txtServerIP.Size = new System.Drawing.Size(191, 23);
             this.txtServerIP.TabIndex = 1;
             this.txtServerIP.UseSystemPasswordChar = false;
+            this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
             // 
             // txtPocetKlientu
             // 
@@ -154,6 +156,7 @@
             this.txtPocetKlientu.TabIndex = 8;
             this.txtPocetKlientu.Text = "5";
             this.txtPocetKlientu.UseSystemPasswordChar = false;
+            this.txtPocetKlientu.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
             // 
             // materialLabel3
             // 
@@ -171,9 +174,9 @@
             // VypisKlientu
             // 
             this.VypisKlientu.FormattingEnabled = true;
-            this.VypisKlientu.Location = new System.Drawing.Point(33, 442);
+            this.VypisKlientu.Location = new System.Drawing.Point(23, 382);
             this.VypisKlientu.Name = "VypisKlientu";
-            this.VypisKlientu.Size = new System.Drawing.Size(191, 160);
+            this.VypisKlientu.Size = new System.Drawing.Size(303, 212);
             this.VypisKlientu.TabIndex = 9;
             // 
             // GrpOvladace

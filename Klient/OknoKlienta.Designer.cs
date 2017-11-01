@@ -42,6 +42,7 @@
             this.GrpPrezdivka = new System.Windows.Forms.GroupBox();
             this.GrpPripojeni = new System.Windows.Forms.GroupBox();
             this.GrpZpravy = new System.Windows.Forms.GroupBox();
+            this.BtnOdpojit = new MaterialSkin.Controls.MaterialFlatButton();
             this.GrpPrezdivka.SuspendLayout();
             this.GrpPripojeni.SuspendLayout();
             this.GrpZpravy.SuspendLayout();
@@ -62,6 +63,7 @@
             this.txtServerPort.TabIndex = 7;
             this.txtServerPort.Text = "8888";
             this.txtServerPort.UseSystemPasswordChar = false;
+            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
             // 
             // materialLabel2
             // 
@@ -91,6 +93,7 @@
             this.txtServerIP.TabIndex = 5;
             this.txtServerIP.Text = "127.0.0.1";
             this.txtServerIP.UseSystemPasswordChar = false;
+            this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
             // 
             // materialLabel1
             // 
@@ -160,6 +163,7 @@
             this.txtZprava.Size = new System.Drawing.Size(449, 23);
             this.txtZprava.TabIndex = 11;
             this.txtZprava.UseSystemPasswordChar = false;
+            this.txtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtZprava_KeyPress);
             // 
             // txtPrezdivka
             // 
@@ -175,6 +179,7 @@
             this.txtPrezdivka.Size = new System.Drawing.Size(261, 23);
             this.txtPrezdivka.TabIndex = 12;
             this.txtPrezdivka.UseSystemPasswordChar = false;
+            this.txtPrezdivka.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPrezdivka_KeyPress);
             // 
             // BtnPrezdivka
             // 
@@ -211,7 +216,7 @@
             this.GrpPrezdivka.Controls.Add(this.BtnPrezdivka);
             this.GrpPrezdivka.Controls.Add(this.txtPrezdivka);
             this.GrpPrezdivka.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.GrpPrezdivka.Location = new System.Drawing.Point(12, 127);
+            this.GrpPrezdivka.Location = new System.Drawing.Point(12, 102);
             this.GrpPrezdivka.Name = "GrpPrezdivka";
             this.GrpPrezdivka.Size = new System.Drawing.Size(360, 100);
             this.GrpPrezdivka.TabIndex = 15;
@@ -224,7 +229,7 @@
             this.GrpPripojeni.Controls.Add(this.materialLabel2);
             this.GrpPripojeni.Controls.Add(this.txtServerPort);
             this.GrpPripojeni.Controls.Add(this.BtnKlientPripojeni);
-            this.GrpPripojeni.Location = new System.Drawing.Point(12, 233);
+            this.GrpPripojeni.Location = new System.Drawing.Point(12, 208);
             this.GrpPripojeni.Name = "GrpPripojeni";
             this.GrpPripojeni.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.GrpPripojeni.Size = new System.Drawing.Size(360, 159);
@@ -241,11 +246,28 @@
             this.GrpZpravy.TabIndex = 17;
             this.GrpZpravy.TabStop = false;
             // 
+            // BtnOdpojit
+            // 
+            this.BtnOdpojit.AutoSize = true;
+            this.BtnOdpojit.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BtnOdpojit.Depth = 0;
+            this.BtnOdpojit.Location = new System.Drawing.Point(22, 376);
+            this.BtnOdpojit.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.BtnOdpojit.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnOdpojit.Name = "BtnOdpojit";
+            this.BtnOdpojit.Primary = false;
+            this.BtnOdpojit.Size = new System.Drawing.Size(88, 36);
+            this.BtnOdpojit.TabIndex = 18;
+            this.BtnOdpojit.Text = "Odpojit se";
+            this.BtnOdpojit.UseVisualStyleBackColor = true;
+            this.BtnOdpojit.Click += new System.EventHandler(this.BtnOdpojit_Click);
+            // 
             // Klient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(985, 680);
+            this.Controls.Add(this.BtnOdpojit);
             this.Controls.Add(this.GrpZpravy);
             this.Controls.Add(this.GrpPripojeni);
             this.Controls.Add(this.GrpPrezdivka);
@@ -260,6 +282,7 @@
             this.GrpZpravy.ResumeLayout(false);
             this.GrpZpravy.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -279,6 +302,7 @@
         private System.Windows.Forms.GroupBox GrpPrezdivka;
         private System.Windows.Forms.GroupBox GrpPripojeni;
         private System.Windows.Forms.GroupBox GrpZpravy;
+        private MaterialSkin.Controls.MaterialFlatButton BtnOdpojit;
     }
 }
 

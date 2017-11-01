@@ -82,11 +82,5 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SpolecneSoubory\SpolecneSoubory.csproj">
-      <Project>{0cf4c06d-0da7-43d6-b77e-af70909971c2}</Project>
-      <Name>SpolecneSoubory</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
