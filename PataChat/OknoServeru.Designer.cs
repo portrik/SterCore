@@ -70,7 +70,7 @@
             this.txtServerPort.TabIndex = 3;
             this.txtServerPort.Text = "8888";
             this.txtServerPort.UseSystemPasswordChar = false;
-            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
+            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
             // 
             // BtnServerStart
             // 
@@ -139,7 +139,7 @@
             this.txtServerIP.Size = new System.Drawing.Size(191, 23);
             this.txtServerIP.TabIndex = 1;
             this.txtServerIP.UseSystemPasswordChar = false;
-            this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
+            this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
             // 
             // txtPocetKlientu
             // 
@@ -156,7 +156,7 @@
             this.txtPocetKlientu.TabIndex = 8;
             this.txtPocetKlientu.Text = "5";
             this.txtPocetKlientu.UseSystemPasswordChar = false;
-            this.txtPocetKlientu.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
+            this.txtPocetKlientu.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
             // 
             // materialLabel3
             // 

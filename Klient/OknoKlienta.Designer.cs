@@ -28,15 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.txtServerPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.TxtServerPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
-            this.txtServerIP = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.TxtServerIP = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
             this.BtnKlientPripojeni = new MaterialSkin.Controls.MaterialFlatButton();
             this.VypisChatu = new System.Windows.Forms.ListBox();
             this.BtnOdeslat = new MaterialSkin.Controls.MaterialFlatButton();
-            this.txtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.txtPrezdivka = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.TxtPrezdivka = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.BtnPrezdivka = new MaterialSkin.Controls.MaterialFlatButton();
             this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
             this.GrpPrezdivka = new System.Windows.Forms.GroupBox();
@@ -48,22 +48,22 @@
             this.GrpZpravy.SuspendLayout();
             this.SuspendLayout();
             // 
-            // txtServerPort
+            // TxtServerPort
             // 
-            this.txtServerPort.Depth = 0;
-            this.txtServerPort.Hint = "";
-            this.txtServerPort.Location = new System.Drawing.Point(106, 63);
-            this.txtServerPort.MouseState = MaterialSkin.MouseState.HOVER;
-            this.txtServerPort.Name = "txtServerPort";
-            this.txtServerPort.PasswordChar = '\0';
-            this.txtServerPort.SelectedText = "";
-            this.txtServerPort.SelectionLength = 0;
-            this.txtServerPort.SelectionStart = 0;
-            this.txtServerPort.Size = new System.Drawing.Size(248, 23);
-            this.txtServerPort.TabIndex = 7;
-            this.txtServerPort.Text = "8888";
-            this.txtServerPort.UseSystemPasswordChar = false;
-            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
+            this.TxtServerPort.Depth = 0;
+            this.TxtServerPort.Hint = "";
+            this.TxtServerPort.Location = new System.Drawing.Point(106, 63);
+            this.TxtServerPort.MouseState = MaterialSkin.MouseState.HOVER;
+            this.TxtServerPort.Name = "TxtServerPort";
+            this.TxtServerPort.PasswordChar = '\0';
+            this.TxtServerPort.SelectedText = "";
+            this.TxtServerPort.SelectionLength = 0;
+            this.TxtServerPort.SelectionStart = 0;
+            this.TxtServerPort.Size = new System.Drawing.Size(248, 23);
+            this.TxtServerPort.TabIndex = 7;
+            this.TxtServerPort.Text = "8888";
+            this.TxtServerPort.UseSystemPasswordChar = false;
+            this.TxtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
             // 
             // materialLabel2
             // 
@@ -78,22 +78,22 @@
             this.materialLabel2.TabIndex = 6;
             this.materialLabel2.Text = "Port serveru:";
             // 
-            // txtServerIP
+            // TxtServerIP
             // 
-            this.txtServerIP.Depth = 0;
-            this.txtServerIP.Hint = "";
-            this.txtServerIP.Location = new System.Drawing.Point(106, 34);
-            this.txtServerIP.MouseState = MaterialSkin.MouseState.HOVER;
-            this.txtServerIP.Name = "txtServerIP";
-            this.txtServerIP.PasswordChar = '\0';
-            this.txtServerIP.SelectedText = "";
-            this.txtServerIP.SelectionLength = 0;
-            this.txtServerIP.SelectionStart = 0;
-            this.txtServerIP.Size = new System.Drawing.Size(248, 23);
-            this.txtServerIP.TabIndex = 5;
-            this.txtServerIP.Text = "127.0.0.1";
-            this.txtServerIP.UseSystemPasswordChar = false;
-            this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtServerIP_KeyPress);
+            this.TxtServerIP.Depth = 0;
+            this.TxtServerIP.Hint = "";
+            this.TxtServerIP.Location = new System.Drawing.Point(106, 34);
+            this.TxtServerIP.MouseState = MaterialSkin.MouseState.HOVER;
+            this.TxtServerIP.Name = "TxtServerIP";
+            this.TxtServerIP.PasswordChar = '\0';
+            this.TxtServerIP.SelectedText = "";
+            this.TxtServerIP.SelectionLength = 0;
+            this.TxtServerIP.SelectionStart = 0;
+            this.TxtServerIP.Size = new System.Drawing.Size(248, 23);
+            this.TxtServerIP.TabIndex = 5;
+            this.TxtServerIP.Text = "127.0.0.1";
+            this.TxtServerIP.UseSystemPasswordChar = false;
+            this.TxtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
             // 
             // materialLabel1
             // 
@@ -148,38 +148,38 @@
             this.BtnOdeslat.UseVisualStyleBackColor = true;
             this.BtnOdeslat.Click += new System.EventHandler(this.BtnOdeslat_Click);
             // 
-            // txtZprava
+            // TxtZprava
             // 
-            this.txtZprava.Depth = 0;
-            this.txtZprava.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtZprava.Hint = "";
-            this.txtZprava.Location = new System.Drawing.Point(4, 19);
-            this.txtZprava.MouseState = MaterialSkin.MouseState.HOVER;
-            this.txtZprava.Name = "txtZprava";
-            this.txtZprava.PasswordChar = '\0';
-            this.txtZprava.SelectedText = "";
-            this.txtZprava.SelectionLength = 0;
-            this.txtZprava.SelectionStart = 0;
-            this.txtZprava.Size = new System.Drawing.Size(449, 23);
-            this.txtZprava.TabIndex = 11;
-            this.txtZprava.UseSystemPasswordChar = false;
-            this.txtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtZprava_KeyPress);
+            this.TxtZprava.Depth = 0;
+            this.TxtZprava.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtZprava.Hint = "";
+            this.TxtZprava.Location = new System.Drawing.Point(4, 19);
+            this.TxtZprava.MouseState = MaterialSkin.MouseState.HOVER;
+            this.TxtZprava.Name = "TxtZprava";
+            this.TxtZprava.PasswordChar = '\0';
+            this.TxtZprava.SelectedText = "";
+            this.TxtZprava.SelectionLength = 0;
+            this.TxtZprava.SelectionStart = 0;
+            this.TxtZprava.Size = new System.Drawing.Size(449, 23);
+            this.TxtZprava.TabIndex = 11;
+            this.TxtZprava.UseSystemPasswordChar = false;
+            this.TxtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtZprava_KeyPress);
             // 
-            // txtPrezdivka
+            // TxtPrezdivka
             // 
-            this.txtPrezdivka.Depth = 0;
-            this.txtPrezdivka.Hint = "";
-            this.txtPrezdivka.Location = new System.Drawing.Point(93, 27);
-            this.txtPrezdivka.MouseState = MaterialSkin.MouseState.HOVER;
-            this.txtPrezdivka.Name = "txtPrezdivka";
-            this.txtPrezdivka.PasswordChar = '\0';
-            this.txtPrezdivka.SelectedText = "";
-            this.txtPrezdivka.SelectionLength = 0;
-            this.txtPrezdivka.SelectionStart = 0;
-            this.txtPrezdivka.Size = new System.Drawing.Size(261, 23);
-            this.txtPrezdivka.TabIndex = 12;
-            this.txtPrezdivka.UseSystemPasswordChar = false;
-            this.txtPrezdivka.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtPrezdivka_KeyPress);
+            this.TxtPrezdivka.Depth = 0;
+            this.TxtPrezdivka.Hint = "";
+            this.TxtPrezdivka.Location = new System.Drawing.Point(93, 27);
+            this.TxtPrezdivka.MouseState = MaterialSkin.MouseState.HOVER;
+            this.TxtPrezdivka.Name = "TxtPrezdivka";
+            this.TxtPrezdivka.PasswordChar = '\0';
+            this.TxtPrezdivka.SelectedText = "";
+            this.TxtPrezdivka.SelectionLength = 0;
+            this.TxtPrezdivka.SelectionStart = 0;
+            this.TxtPrezdivka.Size = new System.Drawing.Size(261, 23);
+            this.TxtPrezdivka.TabIndex = 12;
+            this.TxtPrezdivka.UseSystemPasswordChar = false;
+            this.TxtPrezdivka.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtPrezdivka_KeyPress);
             // 
             // BtnPrezdivka
             // 
@@ -214,7 +214,7 @@
             // 
             this.GrpPrezdivka.Controls.Add(this.materialLabel3);
             this.GrpPrezdivka.Controls.Add(this.BtnPrezdivka);
-            this.GrpPrezdivka.Controls.Add(this.txtPrezdivka);
+            this.GrpPrezdivka.Controls.Add(this.TxtPrezdivka);
             this.GrpPrezdivka.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.GrpPrezdivka.Location = new System.Drawing.Point(12, 102);
             this.GrpPrezdivka.Name = "GrpPrezdivka";
@@ -225,9 +225,9 @@
             // GrpPripojeni
             // 
             this.GrpPripojeni.Controls.Add(this.materialLabel1);
-            this.GrpPripojeni.Controls.Add(this.txtServerIP);
+            this.GrpPripojeni.Controls.Add(this.TxtServerIP);
             this.GrpPripojeni.Controls.Add(this.materialLabel2);
-            this.GrpPripojeni.Controls.Add(this.txtServerPort);
+            this.GrpPripojeni.Controls.Add(this.TxtServerPort);
             this.GrpPripojeni.Controls.Add(this.BtnKlientPripojeni);
             this.GrpPripojeni.Location = new System.Drawing.Point(12, 208);
             this.GrpPripojeni.Name = "GrpPripojeni";
@@ -239,7 +239,7 @@
             // GrpZpravy
             // 
             this.GrpZpravy.Controls.Add(this.BtnOdeslat);
-            this.GrpZpravy.Controls.Add(this.txtZprava);
+            this.GrpZpravy.Controls.Add(this.TxtZprava);
             this.GrpZpravy.Location = new System.Drawing.Point(379, 554);
             this.GrpZpravy.Name = "GrpZpravy";
             this.GrpZpravy.Size = new System.Drawing.Size(594, 57);
@@ -288,15 +288,15 @@
 
         #endregion
 
-        private MaterialSkin.Controls.MaterialSingleLineTextField txtServerPort;
+        private MaterialSkin.Controls.MaterialSingleLineTextField TxtServerPort;
         private MaterialSkin.Controls.MaterialLabel materialLabel2;
-        private MaterialSkin.Controls.MaterialSingleLineTextField txtServerIP;
+        private MaterialSkin.Controls.MaterialSingleLineTextField TxtServerIP;
         private MaterialSkin.Controls.MaterialLabel materialLabel1;
         private MaterialSkin.Controls.MaterialFlatButton BtnKlientPripojeni;
         private System.Windows.Forms.ListBox VypisChatu;
         private MaterialSkin.Controls.MaterialFlatButton BtnOdeslat;
-        private MaterialSkin.Controls.MaterialSingleLineTextField txtZprava;
-        private MaterialSkin.Controls.MaterialSingleLineTextField txtPrezdivka;
+        private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
+        private MaterialSkin.Controls.MaterialSingleLineTextField TxtPrezdivka;
         private MaterialSkin.Controls.MaterialFlatButton BtnPrezdivka;
         private MaterialSkin.Controls.MaterialLabel materialLabel3;
         private System.Windows.Forms.GroupBox GrpPrezdivka;

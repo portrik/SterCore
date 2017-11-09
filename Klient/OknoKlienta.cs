@@ -38,15 +38,19 @@ namespace PataChat
 
         private void BtnPrezdivka_Click(object sender, EventArgs e) //Nastavení přezdívky klienta
         {
-            if(txtPrezdivka.Text.Length != 0)
+            if(TxtPrezdivka.Text.Length != 0)
             {
-                Prezdivka = txtPrezdivka.Text;
+                Prezdivka = TxtPrezdivka.Text;
                 GrpPrezdivka.Enabled = false; //Vypnutí zadávání přezdívky
                 GrpPripojeni.Enabled = true; //Zapnutí možností připojení
+                TxtServerIP.Focus();
+                TxtServerIP.SelectAll();
             }
             else
             {
                 MessageBox.Show("Musí být zadána přezdívka!", "Chyba!");
+                TxtPrezdivka.Focus();
+                TxtPrezdivka.SelectAll();
             }
         }
 
@@ -54,7 +58,7 @@ namespace PataChat
         {            
             try
             {
-                IPEndPoint AdresaServeru = new IPEndPoint(IPAddress.Parse(txtServerIP.Text), int.Parse(txtServerPort.Text));//Zpracování adresy a portu
+                IPEndPoint AdresaServeru = new IPEndPoint(IPAddress.Parse(TxtServerIP.Text), int.Parse(TxtServerPort.Text));//Zpracování adresy a portu
                 Komunikace.Connect(AdresaServeru);//Pokus o připojení na zadanou adresu a port
 
                 VypisChatu.Items.Add("Připojuji se k serveru...");
@@ -65,10 +69,10 @@ namespace PataChat
                     VypisChatu.Items.Add("Připojení bylo úspěšné!");
                     byte[] Jmeno = Encoding.UTF8.GetBytes(Prezdivka);//Převedení přezdívky na byty
                     Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
-                    Odesilani.Flush();//Vyprázdnění proudu
+                    //Odesilani.Flush();//Vyprázdnění proudu
 
-                    GrpPripojeni.Enabled = false;//Vypne možnosti pro připojení
-                    GrpZpravy.Enabled = true;//Zapne odesílání zpráv
+                    Povoleni(GrpPripojeni, false);//Vypne možnosti pro připojení
+                    Povoleni(GrpZpravy, true);//Zapne odesílání zpráv
 
                     Prijmani = new Thread(PrijmaniZprav)
                     {
@@ -87,20 +91,68 @@ namespace PataChat
 
         private void PrijmaniZprav()//Příjmá zprávy od serveru
         {
-            while(Komunikace.Connected)
+            try
             {
-                Prijem = Komunikace.GetStream();//Nastaví proud na adresu
+                while (Komunikace.Connected)
+                {
+                    Prijem = Komunikace.GetStream();//Nastaví proud na adresu
 
-                byte[] Data = new byte[1024 * 1024 * 2];//Pole pro příjem sériových dat
+                    byte[] Data = new byte[1024 * 1024 * 2];//Pole pro příjem sériových dat
 
-                Prijem.Read(Data, 0, Komunikace.ReceiveBufferSize);//Načtení sériových dat
-                string Zprava = Encoding.UTF8.GetString(Data).TrimEnd('\0');//Dekódování sériových dat
+                    Prijem.Read(Data, 0, Komunikace.ReceiveBufferSize);//Načtení sériových dat
+                    string Zprava = Encoding.UTF8.GetString(Data).TrimEnd('\0');//Dekódování sériových dat
+                    string[] Uprava = Zprava.Split('φ');
 
-                Vypsani(Zprava);
-            }
+                    switch (Uprava[0])
+                    {
+                        case "0"://Běžná zpráva
+                            {
+                                Vypsani(Uprava[1] + Uprava[2]);
+                                break;
+                            }
+                        case "1"://TODO: Zpracování obrázku
+                            {
+                                break;
+                            }
+                        case "2"://TODO: Zpracování souboru
+                            {
+                                break;
+                            }
+                        case "3"://TODO: Obsluha
+                            {
+                                break;
+                            }
+                        case "4":
+                            {
+                                Komunikace.Dispose();
+                                break;
+                            }
+                    }
 
-            Komunikace.Close();
+                    
+                }
+            }      
+            catch
+            {
+                Komunikace.Close();
+                Vypsani("Spojení bylo ukončeno");
+                Povoleni(GrpZpravy, true);
+                Povoleni(GrpZpravy, false);
+                Prijmani.Join();                
+            }           
         }
+
+        private void Povoleni(GroupBox Skupina, bool Volba)
+        {
+            if(InvokeRequired)
+            {
+                Invoke((MethodInvoker)(() => Povoleni(Skupina, Volba)));
+            }
+            else
+            {
+                Skupina.Enabled = Volba;
+            }
+        }//Změní, zda je možné daný groupbox používat
 
         private void Vypsani(string Text)//Vypsání zprávy do okna
         {
@@ -116,11 +168,11 @@ namespace PataChat
 
         private void Klient_Load(object sender, EventArgs e)
         {
-            GrpPripojeni.Enabled = false;//Zablokování prvků po spuštění okna
-            GrpZpravy.Enabled = false;
+            Povoleni(GrpPripojeni, false);//Zablokování prvků po spuštění okna
+            Povoleni(GrpZpravy, false);
         }
 
-        private void txtPrezdivka_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtPrezdivka_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)
             {
@@ -128,7 +180,7 @@ namespace PataChat
             }
         }//Povolí enter pro rychlé zadávání
 
-        private void txtServerIP_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtServerIP_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)
             {
@@ -136,7 +188,7 @@ namespace PataChat
             }
         }//Povolí enter pro rychlé zadávání
 
-        private void txtZprava_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)
             {
@@ -146,17 +198,16 @@ namespace PataChat
 
         private void BtnOdpojit_Click(object sender, EventArgs e)
         {
-            Prijmani.Join();
             Komunikace.Dispose();
         }
 
         private void BtnOdeslat_Click(object sender, EventArgs e) //Odeslání zprávy
         {
-            byte[] Zprava = Encoding.UTF8.GetBytes(txtZprava.Text.Trim());//Převedení zprávy na sériová data
+            byte[] Zprava = Encoding.UTF8.GetBytes("0φ" + TxtZprava.Text.Trim());//Převedení zprávy na sériová data
             Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
             Odesilani.Flush();//Vyprázdnění proudu
 
-            txtZprava.Text = null;//Vyprázdnění textového pole
+            TxtZprava.Text = null;//Vyprázdnění textového pole
         }
     }
 }

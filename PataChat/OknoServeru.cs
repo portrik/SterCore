@@ -106,16 +106,43 @@ namespace PataChat
         private void ObsluhaKlienta(string jmeno, TcpClient Pripojeni)//Naslouchá příchozím zprávám od klienta
         {
             NetworkStream Cteni = Pripojeni.GetStream();//Nastaví naslouchání na správnou adresu
-            byte[] HrubaData = new byte[1024 * 1024 * 2];//Pole pro přijímání zpráv
+            byte[] HrubaData;//Pole pro přijímání zpráv
             string Zprava;
             
             try
             {
                 while (true)
                 {
+                    HrubaData = new byte[1024 * 1024 * 2];
                     Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize);//Načtení sériových dat
                     Zprava = Encoding.UTF8.GetString(HrubaData).TrimEnd('\0');//Dekódování a vymazání prázdných znaků
-                    Vysilani(jmeno, Zprava);//Vyslání zprávy všem klientům
+                    string[] Uprava = Zprava.Split('φ');
+
+                    switch(Uprava[0])
+                    {
+                        case "0"://Běžná zpráva
+                            {
+                                Vysilani(jmeno, Uprava[1]);//Vyslání zprávy všem klientům
+                                break;
+                            }
+                        case "1"://TODO: Obrázek
+                            {
+                                break;
+                            }
+                        case "2"://TODO: Soubor
+                            {
+                                break;
+                            }
+                        case "3"://TODO: Obsluha
+                            {
+                                break;
+                            }
+                        case "4"://TODO: Odpojení
+                            {
+                                Exception x = new EndOfStreamException();
+                                break;
+                            }
+                    }
                 }
             }
             catch//Při chybě je klient odpojen
@@ -132,8 +159,8 @@ namespace PataChat
         {
             try
             {
-                Text = string.Concat(Tvurce, ": ", Text);//Naformátuje zprávu před odesláním
-                Invoke((MethodInvoker)(() => VypisChatu.Items.Add(Text)));//Vypíše zprávu na serveru
+                Invoke((MethodInvoker)(() => VypisChatu.Items.Add(Tvurce + ": " + Text)));//Vypíše zprávu na serveru
+                Text = ("0φ" + Tvurce + "φ: " + Text);//Naformátuje zprávu před odesláním                
                 byte[] Data = Encoding.UTF8.GetBytes(Text);//Převede zprávu na byty
 
                 foreach (DictionaryEntry Klient in SeznamKlientu)
@@ -165,6 +192,7 @@ namespace PataChat
             {
                 Invoke((MethodInvoker)(() => PrichoziKomunikace.Stop()));
             }
+
             GrpOvladace.Enabled = true;//Povolí používání nastavení
         }
 
@@ -183,11 +211,11 @@ namespace PataChat
 
         private void Server_Load(object sender, EventArgs e)
         {
-            AdresaServeru = LokalniAdresa();//
+            AdresaServeru = LokalniAdresa();
             txtServerIP.Text = AdresaServeru.ToString(); //Nastaví lokální adresu do textboxu
         }
 
-        private void txtServerIP_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtServerIP_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)
             {
