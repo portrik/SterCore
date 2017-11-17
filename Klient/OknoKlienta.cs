@@ -31,14 +31,14 @@ namespace PataChat
         } //Inicializuje okno a nastaví jeho vzhled
 
         string Prezdivka;//Přezdívka klienta
-        TcpClient Komunikace = new TcpClient();//TcpClient pro komunkaci se serverem
+        TcpClient Komunikace;//TcpClient pro komunkaci se serverem
         NetworkStream Prijem, Odesilani = default(NetworkStream);//Proudy pro přijímání a odesílání informací
 
         Thread Prijmani;
 
         private void BtnPrezdivka_Click(object sender, EventArgs e) //Nastavení přezdívky klienta
         {
-            if(TxtPrezdivka.Text.Length != 0)
+            if(TxtPrezdivka.Text.Length != 0 && TxtPrezdivka.Text.Length <= 30 && !string.IsNullOrWhiteSpace(TxtPrezdivka.Text))
             {
                 Prezdivka = TxtPrezdivka.Text;
                 GrpPrezdivka.Enabled = false; //Vypnutí zadávání přezdívky
@@ -48,38 +48,57 @@ namespace PataChat
             }
             else
             {
-                MessageBox.Show("Musí být zadána přezdívka!", "Chyba!");
+                MessageBox.Show("Přezdívka se musí skládat ze znaků a nesmí být delší než 30 znaků!", "Chyba!");
                 TxtPrezdivka.Focus();
                 TxtPrezdivka.SelectAll();
             }
         }
 
         private void BtnKlientPripojeni_Click(object sender, EventArgs e) //Připojení klienta k serveru
-        {            
+        {
+            Komunikace = new TcpClient();
+            IPEndPoint AdresaServeru = null;
+
             try
             {
-                IPEndPoint AdresaServeru = new IPEndPoint(IPAddress.Parse(TxtServerIP.Text), int.Parse(TxtServerPort.Text));//Zpracování adresy a portu
-                Komunikace.Connect(AdresaServeru);//Pokus o připojení na zadanou adresu a port
-
-                VypisChatu.Items.Add("Připojuji se k serveru...");
-
-                if(Komunikace.Connected)
+                try
                 {
-                    Odesilani = Komunikace.GetStream();//Nastavení proudu na adresu
-                    VypisChatu.Items.Add("Připojení bylo úspěšné!");
-                    byte[] Jmeno = Encoding.UTF8.GetBytes(Prezdivka);//Převedení přezdívky na byty
-                    Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
-                    //Odesilani.Flush();//Vyprázdnění proudu
+                    IPAddress IP = IPAddress.Parse(TxtServerIP.Text);
+                    int Port = int.Parse(TxtServerPort.Text);
+                    AdresaServeru = new IPEndPoint(IP, Port);//Zpracování adresy a portu
+                }
+                catch
+                {
+                    MessageBox.Show("Adresa IP nebo portu byla špatně napsána!", "Chyba!");
+                    TxtServerIP.Focus();
+                    TxtServerIP.SelectAll();
+                }
+                
+                if(!(AdresaServeru == null))
+                {
+                    Komunikace.Connect(AdresaServeru);//Pokus o připojení na zadanou adresu a port
 
-                    Povoleni(GrpPripojeni, false);//Vypne možnosti pro připojení
-                    Povoleni(GrpZpravy, true);//Zapne odesílání zpráv
+                    VypisChatu.Items.Add("Připojuji se k serveru...");
+                    BtnOdpojit.Enabled = true;
 
-                    Prijmani = new Thread(PrijmaniZprav)
+                    if (Komunikace.Connected)
                     {
-                        IsBackground = true
-                    };//Nastaví thread pro přijímání zpráv a nastaví jej do pozadí
+                        Odesilani = Komunikace.GetStream();//Nastavení proudu na adresu
+                        VypisChatu.Items.Add("Připojení bylo úspěšné!");
+                        byte[] Jmeno = Encoding.UTF8.GetBytes(Prezdivka);//Převedení přezdívky na byty
+                        Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
+                                                                //Odesilani.Flush();//Vyprázdnění proudu
 
-                    Prijmani.Start();//Zapnutí poslouchání zpráv
+                        Povoleni(GrpPripojeni, false);//Vypne možnosti pro připojení
+                        Povoleni(GrpZpravy, true);//Zapne odesílání zpráv
+
+                        Prijmani = new Thread(PrijmaniZprav)
+                        {
+                            IsBackground = true
+                        };//Nastaví thread pro přijímání zpráv a nastaví jej do pozadí
+
+                        Prijmani.Start();//Zapnutí poslouchání zpráv
+                    }                
                 }
             }
             catch(Exception x)
@@ -170,6 +189,7 @@ namespace PataChat
         {
             Povoleni(GrpPripojeni, false);//Zablokování prvků po spuštění okna
             Povoleni(GrpZpravy, false);
+            BtnOdpojit.Enabled = false;
         }
 
         private void TxtPrezdivka_KeyPress(object sender, KeyPressEventArgs e)
@@ -198,16 +218,27 @@ namespace PataChat
 
         private void BtnOdpojit_Click(object sender, EventArgs e)
         {
-            Komunikace.Dispose();
+            byte[] Zprava = Encoding.UTF8.GetBytes("4φ");//Převedení zprávy na sériová data
+            Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
+            Odesilani.Flush();//Vyprázdnění proudu
+
+            Komunikace.Close();
+            GrpPripojeni.Enabled = true;
+            BtnOdpojit.Enabled = false;
         }
 
         private void BtnOdeslat_Click(object sender, EventArgs e) //Odeslání zprávy
         {
-            byte[] Zprava = Encoding.UTF8.GetBytes("0φ" + TxtZprava.Text.Trim());//Převedení zprávy na sériová data
-            Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
-            Odesilani.Flush();//Vyprázdnění proudu
+            if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
+            {
+                byte[] Zprava = Encoding.UTF8.GetBytes("0φ" + TxtZprava.Text.Trim());//Převedení zprávy na sériová data
+                Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
+                Odesilani.Flush();//Vyprázdnění proudu
 
-            TxtZprava.Text = null;//Vyprázdnění textového pole
+                TxtZprava.Text = null;//Vyprázdnění textového pole
+                TxtZprava.Focus();
+                TxtZprava.SelectAll();
+            }            
         }
     }
 }

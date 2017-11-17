@@ -56,12 +56,12 @@ namespace PataChat
 
         private void PrijmaniKlientu()//Funkce pro přijímaní připojení
         {           
-
             try
             {
                 PrichoziKomunikace.Start();//Spustí poslouchání
+                Invoke((MethodInvoker)(() => VypisChatu.Items.Add("Server byl spuštěn.")));
 
-                while (PocetKlientu > PocetPripojeni && !Stop)
+                while (!Stop)
                 {
                     TcpClient Klient = PrichoziKomunikace.AcceptTcpClient();//Přijme žádost o připojení
                     ++PocetPripojeni;
@@ -69,8 +69,8 @@ namespace PataChat
                     NetworkStream CteniJmena = Klient.GetStream();//Připojení načítání na správný socket
                     CteniJmena.Read(ByteJmeno, 0, Klient.ReceiveBufferSize);//Načtení sériových dat
                     string Jmeno = Encoding.UTF8.GetString(ByteJmeno).TrimEnd('\0');//Dekódování dat a vymazání prázdných znaků
-                    
-                    if(KontrolaJmena(Jmeno))//Kontrola duplikátního jména
+
+                    if (KontrolaJmena(Jmeno))//Kontrola duplikátního jména
                     {
                         SeznamKlientu.Add(Jmeno, Klient);//Přidá klienta do seznamu
                         Invoke((MethodInvoker)(() => VypisKlientu.Items.Add(Jmeno)));//Vypíše klienta do seznamu na serveru
@@ -91,68 +91,70 @@ namespace PataChat
                         CteniJmena.Flush();
                         Klient.Close();
                         --PocetPripojeni;
-                    }
+                    }               
                 }
+
             }
             catch(Exception x)//Kontrola chyb
             {
                 Invoke((MethodInvoker)(() => VypisChatu.Items.Add("Objevila se chyba:")));
                 Invoke((MethodInvoker)(() => VypisChatu.Items.Add(x.Message)));//Vypíše chybu na server
+            }      
+            finally
+            {
+                PrichoziKomunikace.Stop();//Konec naslouchání
+                BehServeru.Join();
             }
-
-            PrichoziKomunikace.Stop();//Konec naslouchání
         }
 
         private void ObsluhaKlienta(string jmeno, TcpClient Pripojeni)//Naslouchá příchozím zprávám od klienta
         {
-            NetworkStream Cteni = Pripojeni.GetStream();//Nastaví naslouchání na správnou adresu
-            byte[] HrubaData;//Pole pro přijímání zpráv
-            string Zprava;
-            
-            try
+            using (NetworkStream Cteni = Pripojeni.GetStream())//Nastaví naslouchání na správnou adresu
             {
-                while (true)
-                {
-                    HrubaData = new byte[1024 * 1024 * 2];
-                    Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize);//Načtení sériových dat
-                    Zprava = Encoding.UTF8.GetString(HrubaData).TrimEnd('\0');//Dekódování a vymazání prázdných znaků
-                    string[] Uprava = Zprava.Split('φ');
+                byte[] HrubaData;//Pole pro přijímání zpráv
+                string Zprava;
 
-                    switch(Uprava[0])
+                try
+                {
+                    while (!Stop)
                     {
-                        case "0"://Běžná zpráva
-                            {
-                                Vysilani(jmeno, Uprava[1]);//Vyslání zprávy všem klientům
-                                break;
-                            }
-                        case "1"://TODO: Obrázek
-                            {
-                                break;
-                            }
-                        case "2"://TODO: Soubor
-                            {
-                                break;
-                            }
-                        case "3"://TODO: Obsluha
-                            {
-                                break;
-                            }
-                        case "4"://TODO: Odpojení
-                            {
-                                Exception x = new EndOfStreamException();
-                                break;
-                            }
+                        HrubaData = new byte[1024 * 1024 * 2];
+                        Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize);//Načtení sériových dat
+                        Zprava = Encoding.UTF8.GetString(HrubaData).TrimEnd('\0');//Dekódování a vymazání prázdných znaků
+                        string[] Uprava = Zprava.Split('φ');
+
+                        switch (Uprava[0])
+                        {
+                            case "0"://Běžná zpráva
+                                {
+                                    Vysilani(jmeno, Uprava[1]);//Vyslání zprávy všem klientům
+                                    break;
+                                }
+                            case "1"://TODO: Obrázek
+                                {
+                                    break;
+                                }
+                            case "2"://TODO: Soubor
+                                {
+                                    break;
+                                }
+                            case "3"://TODO: Obsluha
+                                {
+                                    break;
+                                }
+                            case "4"://TODO: Odpojení
+                                {
+                                    Exception x = new EndOfStreamException();
+                                    break;
+                                }
+                        }
                     }
                 }
-            }
-            catch//Při chybě je klient odpojen
-            {
-                --PocetPripojeni;
-                Pripojeni.Close();//Zavře socket klienta
-                Invoke((MethodInvoker)(() => VypisKlientu.Items.Remove(jmeno)));//Odstraní klienta z výpisu
-                SeznamKlientu.Remove(jmeno);//Odstraní klienta ze seznamu
-                Vysilani("SERVER", jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům
-            }            
+                catch//Při chybě je klient odpojen
+                {
+                    OdebratKlienta(jmeno);
+                }
+            }                
         }
 
         private void Vysilani(string Tvurce, string Text)//Odeslání zprávy všem klientům
@@ -180,19 +182,12 @@ namespace PataChat
 
         private void BtnServerStop_Click(object sender, EventArgs e)//Ukončení běhu serveru
         {
-            Vysilani("SERVER", "Vypínání serveru...");
-
             foreach(DictionaryEntry Klient in SeznamKlientu)
             {
-                (Klient.Value as TcpClient).GetStream().Close();
                 (Klient.Value as TcpClient).Close();
             }
 
-            if(InvokeRequired)
-            {
-                Invoke((MethodInvoker)(() => PrichoziKomunikace.Stop()));
-            }
-
+            Stop = true;
             GrpOvladace.Enabled = true;//Povolí používání nastavení
         }
 
@@ -209,6 +204,25 @@ namespace PataChat
             return true;//V seznamu se nenachází
         }
 
+        private void OdebratKlienta(string Jmeno)
+        {
+            --PocetPripojeni;
+
+            if (InvokeRequired)//Odstraní klienta z výpisu
+            {
+                Invoke((MethodInvoker)(() => VypisKlientu.Items.Remove(Jmeno)));
+            }
+            else
+            {
+                VypisKlientu.Items.Remove(Jmeno);
+            }
+
+            (SeznamKlientu[Jmeno] as TcpClient).Close();
+            Invoke((MethodInvoker)(() => SeznamKlientu.Remove(Jmeno)));//Odstraní klienta ze seznamu
+            VypisKlientu.Items.Remove(Jmeno);
+            Vysilani("SERVER", Jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům
+        }
+
         private void Server_Load(object sender, EventArgs e)
         {
             AdresaServeru = LokalniAdresa();
@@ -220,6 +234,25 @@ namespace PataChat
             if(e.KeyChar == (char)Keys.Enter)
             {
                 BtnServerStart_Click(null, null);
+            }
+        }
+
+        private void BtnZprava_Click(object sender, EventArgs e)
+        {
+            if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
+            {
+                Vysilani("Server", TxtZprava.Text);
+                TxtZprava.Text = null;
+                TxtZprava.Focus();
+                TxtZprava.SelectAll();
+            }           
+        }
+
+        private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if(e.KeyChar == (char)Keys.Enter)
+            {
+                BtnZprava_Click(null, null);
             }
         }
 
