@@ -1,1 +1,1 @@
-Prostě s tím nedělejta blbosti.
+Prostě s tím nedělejte blbosti.
