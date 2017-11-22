@@ -16,11 +16,17 @@ using System.Collections;
 using System.IO;
 using System.Net.Sockets;
 
-namespace PataChat
+namespace SterCore
 {
-    public partial class Klient : MaterialForm
+    public partial class OknoKlienta : MaterialForm
     {
-        public Klient()
+        string Prezdivka;//Přezdívka klienta
+        TcpClient Komunikace;//TcpClient pro komunkaci se serverem
+        IPEndPoint Adresa = null;
+        NetworkStream Prijem, Odesilani = default(NetworkStream);//Proudy pro přijímání a odesílání informací
+        Thread Prijmani;
+
+        public OknoKlienta()
         {
             InitializeComponent();
 
@@ -30,78 +36,49 @@ namespace PataChat
             materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
         } //Inicializuje okno a nastaví jeho vzhled
 
-        string Prezdivka;//Přezdívka klienta
-        TcpClient Komunikace;//TcpClient pro komunkaci se serverem
-        NetworkStream Prijem, Odesilani = default(NetworkStream);//Proudy pro přijímání a odesílání informací
-
-        Thread Prijmani;
-
-        private void BtnPrezdivka_Click(object sender, EventArgs e) //Nastavení přezdívky klienta
+        public OknoKlienta(string Jmeno, IPEndPoint AdresaServeru)
         {
-            if(TxtPrezdivka.Text.Length != 0 && TxtPrezdivka.Text.Length <= 30 && !string.IsNullOrWhiteSpace(TxtPrezdivka.Text))
-            {
-                Prezdivka = TxtPrezdivka.Text;
-                GrpPrezdivka.Enabled = false; //Vypnutí zadávání přezdívky
-                GrpPripojeni.Enabled = true; //Zapnutí možností připojení
-                TxtServerIP.Focus();
-                TxtServerIP.SelectAll();
-            }
-            else
-            {
-                MessageBox.Show("Přezdívka se musí skládat ze znaků a nesmí být delší než 30 znaků!", "Chyba!");
-                TxtPrezdivka.Focus();
-                TxtPrezdivka.SelectAll();
-            }
-        }
+            InitializeComponent();
 
-        private void BtnKlientPripojeni_Click(object sender, EventArgs e) //Připojení klienta k serveru
+            Prezdivka = Jmeno;
+            Adresa = AdresaServeru;
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
+            Pripojeni();
+        } //Inicializuje okno a nastaví jeho vzhled
+
+        public void Pripojeni()
         {
             Komunikace = new TcpClient();
-            IPEndPoint AdresaServeru = null;
 
             try
             {
-                try
-                {
-                    IPAddress IP = IPAddress.Parse(TxtServerIP.Text);
-                    int Port = int.Parse(TxtServerPort.Text);
-                    AdresaServeru = new IPEndPoint(IP, Port);//Zpracování adresy a portu
-                }
-                catch
-                {
-                    MessageBox.Show("Adresa IP nebo portu byla špatně napsána!", "Chyba!");
-                    TxtServerIP.Focus();
-                    TxtServerIP.SelectAll();
-                }
-                
-                if(!(AdresaServeru == null))
-                {
-                    Komunikace.Connect(AdresaServeru);//Pokus o připojení na zadanou adresu a port
+                Komunikace.Connect(Adresa);//Pokus o připojení na zadanou adresu a port
 
-                    VypisChatu.Items.Add("Připojuji se k serveru...");
-                    BtnOdpojit.Enabled = true;
+                VypisChatu.Items.Add("Připojuji se k serveru...");
+                BtnOdpojit.Enabled = true;
 
-                    if (Komunikace.Connected)
+                if (Komunikace.Connected)
+                {
+                    Odesilani = Komunikace.GetStream();//Nastavení proudu na adresu
+                    VypisChatu.Items.Add("Připojení bylo úspěšné!");
+                    byte[] Jmeno = Encoding.UTF8.GetBytes(Prezdivka);//Převedení přezdívky na byty
+                    Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
+                    Odesilani.Flush();//Vyprázdnění proudu
+
+                    Povoleni(GrpZpravy, true);//Zapne odesílání zpráv
+
+                    Prijmani = new Thread(PrijmaniZprav)
                     {
-                        Odesilani = Komunikace.GetStream();//Nastavení proudu na adresu
-                        VypisChatu.Items.Add("Připojení bylo úspěšné!");
-                        byte[] Jmeno = Encoding.UTF8.GetBytes(Prezdivka);//Převedení přezdívky na byty
-                        Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
-                                                                //Odesilani.Flush();//Vyprázdnění proudu
+                        IsBackground = true
+                    };//Nastaví thread pro přijímání zpráv a nastaví jej do pozadí
 
-                        Povoleni(GrpPripojeni, false);//Vypne možnosti pro připojení
-                        Povoleni(GrpZpravy, true);//Zapne odesílání zpráv
-
-                        Prijmani = new Thread(PrijmaniZprav)
-                        {
-                            IsBackground = true
-                        };//Nastaví thread pro přijímání zpráv a nastaví jej do pozadí
-
-                        Prijmani.Start();//Zapnutí poslouchání zpráv
-                    }                
+                    Prijmani.Start();//Zapnutí poslouchání zpráv
                 }
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 VypisChatu.Items.Add("Objevila se chyba: ");
                 VypisChatu.Items.Add(x.Message);
@@ -187,26 +164,9 @@ namespace PataChat
 
         private void Klient_Load(object sender, EventArgs e)
         {
-            Povoleni(GrpPripojeni, false);//Zablokování prvků po spuštění okna
             Povoleni(GrpZpravy, false);
             BtnOdpojit.Enabled = false;
         }
-
-        private void TxtPrezdivka_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if(e.KeyChar == (char)Keys.Enter)
-            {
-                BtnPrezdivka_Click(null, null);
-            }
-        }//Povolí enter pro rychlé zadávání
-
-        private void TxtServerIP_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if(e.KeyChar == (char)Keys.Enter)
-            {
-                BtnKlientPripojeni_Click(null, null);
-            }
-        }//Povolí enter pro rychlé zadávání
 
         private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -223,7 +183,6 @@ namespace PataChat
             Odesilani.Flush();//Vyprázdnění proudu
 
             Komunikace.Close();
-            GrpPripojeni.Enabled = true;
             BtnOdpojit.Enabled = false;
         }
 

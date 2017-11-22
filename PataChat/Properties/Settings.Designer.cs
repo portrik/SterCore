@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PataChat.Properties
+namespace SterCore.Properties
 {
 
 

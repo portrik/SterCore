@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PataChat
+namespace SterCore
 {
     static class Program
     {
@@ -16,7 +16,7 @@ namespace PataChat
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Klient());
+            Application.Run(new UvodKlienta());
         }
     }
 }

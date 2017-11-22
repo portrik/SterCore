@@ -1,6 +1,6 @@
-﻿namespace PataChat
+﻿namespace SterCore
 {
-    partial class Klient
+    partial class OknoKlienta
     {
         /// <summary>
         /// Required designer variable.
@@ -28,86 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Klient));
-            this.TxtServerPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
-            this.TxtServerIP = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OknoKlienta));
             this.VypisChatu = new System.Windows.Forms.ListBox();
             this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.TxtPrezdivka = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
-            this.GrpPrezdivka = new System.Windows.Forms.GroupBox();
-            this.GrpPripojeni = new System.Windows.Forms.GroupBox();
             this.GrpZpravy = new System.Windows.Forms.GroupBox();
-            this.BtnOdpojit = new MaterialSkin.Controls.MaterialRaisedButton();
-            this.BtnKlientPripojeni = new MaterialSkin.Controls.MaterialRaisedButton();
             this.BtnOdeslat = new MaterialSkin.Controls.MaterialRaisedButton();
-            this.BtnPrezdivka = new MaterialSkin.Controls.MaterialRaisedButton();
-            this.GrpPrezdivka.SuspendLayout();
-            this.GrpPripojeni.SuspendLayout();
+            this.BtnOdpojit = new MaterialSkin.Controls.MaterialRaisedButton();
+            this.LstPripojeni = new System.Windows.Forms.ListBox();
+            this.LabelPripojeni = new MaterialSkin.Controls.MaterialLabel();
             this.GrpZpravy.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // TxtServerPort
-            // 
-            this.TxtServerPort.Depth = 0;
-            this.TxtServerPort.Hint = "";
-            this.TxtServerPort.Location = new System.Drawing.Point(106, 63);
-            this.TxtServerPort.MouseState = MaterialSkin.MouseState.HOVER;
-            this.TxtServerPort.Name = "TxtServerPort";
-            this.TxtServerPort.PasswordChar = '\0';
-            this.TxtServerPort.SelectedText = "";
-            this.TxtServerPort.SelectionLength = 0;
-            this.TxtServerPort.SelectionStart = 0;
-            this.TxtServerPort.Size = new System.Drawing.Size(248, 23);
-            this.TxtServerPort.TabIndex = 7;
-            this.TxtServerPort.Text = "8888";
-            this.TxtServerPort.UseSystemPasswordChar = false;
-            this.TxtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
-            // 
-            // materialLabel2
-            // 
-            this.materialLabel2.AutoSize = true;
-            this.materialLabel2.Depth = 0;
-            this.materialLabel2.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel2.Location = new System.Drawing.Point(6, 60);
-            this.materialLabel2.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel2.Name = "materialLabel2";
-            this.materialLabel2.Size = new System.Drawing.Size(94, 19);
-            this.materialLabel2.TabIndex = 6;
-            this.materialLabel2.Text = "Port serveru:";
-            // 
-            // TxtServerIP
-            // 
-            this.TxtServerIP.Depth = 0;
-            this.TxtServerIP.Hint = "";
-            this.TxtServerIP.Location = new System.Drawing.Point(106, 34);
-            this.TxtServerIP.MouseState = MaterialSkin.MouseState.HOVER;
-            this.TxtServerIP.Name = "TxtServerIP";
-            this.TxtServerIP.PasswordChar = '\0';
-            this.TxtServerIP.SelectedText = "";
-            this.TxtServerIP.SelectionLength = 0;
-            this.TxtServerIP.SelectionStart = 0;
-            this.TxtServerIP.Size = new System.Drawing.Size(248, 23);
-            this.TxtServerIP.TabIndex = 5;
-            this.TxtServerIP.Text = "127.0.0.1";
-            this.TxtServerIP.UseSystemPasswordChar = false;
-            this.TxtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtServerIP_KeyPress);
-            // 
-            // materialLabel1
-            // 
-            this.materialLabel1.AutoSize = true;
-            this.materialLabel1.Depth = 0;
-            this.materialLabel1.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel1.Location = new System.Drawing.Point(6, 34);
-            this.materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel1.Name = "materialLabel1";
-            this.materialLabel1.Size = new System.Drawing.Size(79, 19);
-            this.materialLabel1.TabIndex = 4;
-            this.materialLabel1.Text = "IP serveru:";
             // 
             // VypisChatu
             // 
@@ -134,61 +64,6 @@
             this.TxtZprava.UseSystemPasswordChar = false;
             this.TxtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtZprava_KeyPress);
             // 
-            // TxtPrezdivka
-            // 
-            this.TxtPrezdivka.Depth = 0;
-            this.TxtPrezdivka.Hint = "";
-            this.TxtPrezdivka.Location = new System.Drawing.Point(93, 27);
-            this.TxtPrezdivka.MouseState = MaterialSkin.MouseState.HOVER;
-            this.TxtPrezdivka.Name = "TxtPrezdivka";
-            this.TxtPrezdivka.PasswordChar = '\0';
-            this.TxtPrezdivka.SelectedText = "";
-            this.TxtPrezdivka.SelectionLength = 0;
-            this.TxtPrezdivka.SelectionStart = 0;
-            this.TxtPrezdivka.Size = new System.Drawing.Size(261, 23);
-            this.TxtPrezdivka.TabIndex = 12;
-            this.TxtPrezdivka.UseSystemPasswordChar = false;
-            this.TxtPrezdivka.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtPrezdivka_KeyPress);
-            // 
-            // materialLabel3
-            // 
-            this.materialLabel3.AutoSize = true;
-            this.materialLabel3.Depth = 0;
-            this.materialLabel3.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel3.Location = new System.Drawing.Point(6, 27);
-            this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel3.Name = "materialLabel3";
-            this.materialLabel3.Size = new System.Drawing.Size(81, 19);
-            this.materialLabel3.TabIndex = 14;
-            this.materialLabel3.Text = "Přezdívka: ";
-            // 
-            // GrpPrezdivka
-            // 
-            this.GrpPrezdivka.Controls.Add(this.BtnPrezdivka);
-            this.GrpPrezdivka.Controls.Add(this.materialLabel3);
-            this.GrpPrezdivka.Controls.Add(this.TxtPrezdivka);
-            this.GrpPrezdivka.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.GrpPrezdivka.Location = new System.Drawing.Point(12, 102);
-            this.GrpPrezdivka.Name = "GrpPrezdivka";
-            this.GrpPrezdivka.Size = new System.Drawing.Size(360, 100);
-            this.GrpPrezdivka.TabIndex = 15;
-            this.GrpPrezdivka.TabStop = false;
-            // 
-            // GrpPripojeni
-            // 
-            this.GrpPripojeni.Controls.Add(this.BtnKlientPripojeni);
-            this.GrpPripojeni.Controls.Add(this.materialLabel1);
-            this.GrpPripojeni.Controls.Add(this.TxtServerIP);
-            this.GrpPripojeni.Controls.Add(this.materialLabel2);
-            this.GrpPripojeni.Controls.Add(this.TxtServerPort);
-            this.GrpPripojeni.Location = new System.Drawing.Point(12, 208);
-            this.GrpPripojeni.Name = "GrpPripojeni";
-            this.GrpPripojeni.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.GrpPripojeni.Size = new System.Drawing.Size(360, 159);
-            this.GrpPripojeni.TabIndex = 16;
-            this.GrpPripojeni.TabStop = false;
-            // 
             // GrpZpravy
             // 
             this.GrpZpravy.Controls.Add(this.BtnOdeslat);
@@ -198,32 +73,6 @@
             this.GrpZpravy.Size = new System.Drawing.Size(594, 57);
             this.GrpZpravy.TabIndex = 17;
             this.GrpZpravy.TabStop = false;
-            // 
-            // BtnOdpojit
-            // 
-            this.BtnOdpojit.Depth = 0;
-            this.BtnOdpojit.Location = new System.Drawing.Point(22, 395);
-            this.BtnOdpojit.MouseState = MaterialSkin.MouseState.HOVER;
-            this.BtnOdpojit.Name = "BtnOdpojit";
-            this.BtnOdpojit.Primary = true;
-            this.BtnOdpojit.Size = new System.Drawing.Size(109, 36);
-            this.BtnOdpojit.TabIndex = 19;
-            this.BtnOdpojit.Text = "Odpojit se";
-            this.BtnOdpojit.UseVisualStyleBackColor = true;
-            this.BtnOdpojit.Click += new System.EventHandler(this.BtnOdpojit_Click);
-            // 
-            // BtnKlientPripojeni
-            // 
-            this.BtnKlientPripojeni.Depth = 0;
-            this.BtnKlientPripojeni.Location = new System.Drawing.Point(10, 117);
-            this.BtnKlientPripojeni.MouseState = MaterialSkin.MouseState.HOVER;
-            this.BtnKlientPripojeni.Name = "BtnKlientPripojeni";
-            this.BtnKlientPripojeni.Primary = true;
-            this.BtnKlientPripojeni.Size = new System.Drawing.Size(109, 36);
-            this.BtnKlientPripojeni.TabIndex = 20;
-            this.BtnKlientPripojeni.Text = "Připojit se";
-            this.BtnKlientPripojeni.UseVisualStyleBackColor = true;
-            this.BtnKlientPripojeni.Click += new System.EventHandler(this.BtnKlientPripojeni_Click);
             // 
             // BtnOdeslat
             // 
@@ -238,59 +87,68 @@
             this.BtnOdeslat.UseVisualStyleBackColor = true;
             this.BtnOdeslat.Click += new System.EventHandler(this.BtnOdeslat_Click);
             // 
-            // BtnPrezdivka
+            // BtnOdpojit
             // 
-            this.BtnPrezdivka.Depth = 0;
-            this.BtnPrezdivka.Location = new System.Drawing.Point(10, 56);
-            this.BtnPrezdivka.MouseState = MaterialSkin.MouseState.HOVER;
-            this.BtnPrezdivka.Name = "BtnPrezdivka";
-            this.BtnPrezdivka.Primary = true;
-            this.BtnPrezdivka.Size = new System.Drawing.Size(139, 38);
-            this.BtnPrezdivka.TabIndex = 22;
-            this.BtnPrezdivka.Text = "Zvolit přezdívku";
-            this.BtnPrezdivka.UseVisualStyleBackColor = true;
-            this.BtnPrezdivka.Click += new System.EventHandler(this.BtnPrezdivka_Click);
+            this.BtnOdpojit.Depth = 0;
+            this.BtnOdpojit.Location = new System.Drawing.Point(12, 102);
+            this.BtnOdpojit.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnOdpojit.Name = "BtnOdpojit";
+            this.BtnOdpojit.Primary = true;
+            this.BtnOdpojit.Size = new System.Drawing.Size(109, 36);
+            this.BtnOdpojit.TabIndex = 19;
+            this.BtnOdpojit.Text = "Odpojit se";
+            this.BtnOdpojit.UseVisualStyleBackColor = true;
+            this.BtnOdpojit.Click += new System.EventHandler(this.BtnOdpojit_Click);
             // 
-            // Klient
+            // LstPripojeni
+            // 
+            this.LstPripojeni.FormattingEnabled = true;
+            this.LstPripojeni.Location = new System.Drawing.Point(12, 185);
+            this.LstPripojeni.Name = "LstPripojeni";
+            this.LstPripojeni.Size = new System.Drawing.Size(359, 420);
+            this.LstPripojeni.TabIndex = 20;
+            // 
+            // LabelPripojeni
+            // 
+            this.LabelPripojeni.AutoSize = true;
+            this.LabelPripojeni.Depth = 0;
+            this.LabelPripojeni.Font = new System.Drawing.Font("Roboto", 11F);
+            this.LabelPripojeni.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.LabelPripojeni.Location = new System.Drawing.Point(12, 163);
+            this.LabelPripojeni.MouseState = MaterialSkin.MouseState.HOVER;
+            this.LabelPripojeni.Name = "LabelPripojeni";
+            this.LabelPripojeni.Size = new System.Drawing.Size(206, 19);
+            this.LabelPripojeni.TabIndex = 21;
+            this.LabelPripojeni.Text = "Seznam připojených uživatelů";
+            // 
+            // OknoKlienta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(985, 680);
+            this.Controls.Add(this.LabelPripojeni);
+            this.Controls.Add(this.LstPripojeni);
             this.Controls.Add(this.BtnOdpojit);
             this.Controls.Add(this.GrpZpravy);
-            this.Controls.Add(this.GrpPripojeni);
-            this.Controls.Add(this.GrpPrezdivka);
             this.Controls.Add(this.VypisChatu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Klient";
+            this.Name = "OknoKlienta";
             this.Text = "Klient";
             this.Load += new System.EventHandler(this.Klient_Load);
-            this.GrpPrezdivka.ResumeLayout(false);
-            this.GrpPrezdivka.PerformLayout();
-            this.GrpPripojeni.ResumeLayout(false);
-            this.GrpPripojeni.PerformLayout();
             this.GrpZpravy.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
-
-        private MaterialSkin.Controls.MaterialSingleLineTextField TxtServerPort;
-        private MaterialSkin.Controls.MaterialLabel materialLabel2;
-        private MaterialSkin.Controls.MaterialSingleLineTextField TxtServerIP;
-        private MaterialSkin.Controls.MaterialLabel materialLabel1;
         private System.Windows.Forms.ListBox VypisChatu;
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
-        private MaterialSkin.Controls.MaterialSingleLineTextField TxtPrezdivka;
-        private MaterialSkin.Controls.MaterialLabel materialLabel3;
-        private System.Windows.Forms.GroupBox GrpPrezdivka;
-        private System.Windows.Forms.GroupBox GrpPripojeni;
         private System.Windows.Forms.GroupBox GrpZpravy;
-        private MaterialSkin.Controls.MaterialRaisedButton BtnKlientPripojeni;
-        private MaterialSkin.Controls.MaterialRaisedButton BtnOdpojit;
         private MaterialSkin.Controls.MaterialRaisedButton BtnOdeslat;
-        private MaterialSkin.Controls.MaterialRaisedButton BtnPrezdivka;
+        private MaterialSkin.Controls.MaterialRaisedButton BtnOdpojit;
+        private System.Windows.Forms.ListBox LstPripojeni;
+        private MaterialSkin.Controls.MaterialLabel LabelPripojeni;
     }
 }
 

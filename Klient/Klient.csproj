@@ -12,7 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>I:\</PublishUrl>
+    <PublishUrl>C:\Users\dvora\Documents\Visual Studio 2017\Projects\SterCore\Release\Ver0.2.3\Klient\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -22,8 +22,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -77,6 +76,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UvodKlienta.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UvodKlienta.Designer.cs">
+      <DependentUpon>UvodKlienta.cs</DependentUpon>
+    </Compile>
     <Compile Include="OknoKlienta.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -85,6 +90,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="UvodKlienta.resx">
+      <DependentUpon>UvodKlienta.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="OknoKlienta.resx">
       <DependentUpon>OknoKlienta.cs</DependentUpon>
     </EmbeddedResource>
@@ -97,7 +105,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="Klient_TemporaryKey.pfx" />
+    <None Include="Klient_TemporaryKey.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

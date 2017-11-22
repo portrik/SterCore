@@ -16,11 +16,11 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Collections;
 
-namespace PataChat
+namespace SterCore
 {
-    public partial class Server : MaterialForm
+    public partial class OknoServeru : MaterialForm
     {
-        public Server()
+        public OknoServeru()
         {
             InitializeComponent();
 
@@ -30,21 +30,38 @@ namespace PataChat
             materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
         } //Inicializuje okno a nastaví jeho vzhled
 
+        public OknoServeru(IPAddress Adresa, int Port, int Pocet)
+        {
+            InitializeComponent();
+
+            AdresaServeru = Adresa;
+            PortServeru = Port;
+            PocetKlientu = Pocet;
+
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
+            Shown += new EventHandler(OknoServeru_Shown);
+        }
+
         public static Hashtable SeznamKlientu = new Hashtable();//Seznam připojených uživatelů a jejich adres
-        public static IPAddress AdresaServeru = LokalniAdresa();//Nastavení lokální adresy
+        public static IPAddress AdresaServeru;
         public static int PortServeru, PocetKlientu;//Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
         public static int PocetPripojeni = 0;//Počet aktuálně připojených uživatelů
         bool Stop = false;//Proměná pro zastavení běhu serveru
         TcpListener PrichoziKomunikace;//Poslouchá příchozí komunikaci a žádosti i připojení
         Thread BehServeru;//Thread pro běh serveru na pozadí nezávisle na hlavním okně
 
-        private void BtnServerStart_Click(object sender, EventArgs e)//Spustí běh serveru
+        private void OknoServeru_Shown(Object sender, EventArgs e)
+        {
+            StartServeru();
+        }
+
+        private void StartServeru()
         {
             Stop = false;//Povolí běh serveru
-            PortServeru = int.Parse(txtServerPort.Text);//Zadá hodnotu proměné z textboxu
             PrichoziKomunikace = new TcpListener(AdresaServeru, PortServeru);//Nastaví poslouchání žádostí a komunikace na adresu a port
-            PocetKlientu = int.Parse(txtPocetKlientu.Text);//Načte maximální počet klientů
-            GrpOvladace.Enabled = false;//Vypne úpravu nastavení serveru
 
             BehServeru = new Thread(PrijmaniKlientu)
             {
@@ -188,7 +205,6 @@ namespace PataChat
             }
 
             Stop = true;
-            GrpOvladace.Enabled = true;//Povolí používání nastavení
         }
 
         private bool KontrolaJmena(string Jmeno)//Zkontroluje, zda se jméno již nevyskytuje
@@ -223,20 +239,6 @@ namespace PataChat
             Vysilani("SERVER", Jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům
         }
 
-        private void Server_Load(object sender, EventArgs e)
-        {
-            AdresaServeru = LokalniAdresa();
-            txtServerIP.Text = AdresaServeru.ToString(); //Nastaví lokální adresu do textboxu
-        }
-
-        private void TxtServerIP_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if(e.KeyChar == (char)Keys.Enter)
-            {
-                BtnServerStart_Click(null, null);
-            }
-        }
-
         private void BtnZprava_Click(object sender, EventArgs e)
         {
             if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
@@ -255,19 +257,5 @@ namespace PataChat
                 BtnZprava_Click(null, null);
             }
         }
-
-        public static IPAddress LokalniAdresa()//Získá lokální adresu serveru
-        {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var IP in host.AddressList)
-            {
-                if (IP.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return IP;
-                }
-            }
-
-            return IPAddress.Parse("127.0.0.1"); //Pokud není počítač připojen k síti, vrátí loopback adresu
-        } //Zjistí lokální adresu klienta
     }
 }

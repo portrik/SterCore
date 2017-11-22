@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Klient.Properties
+namespace SterCore.Properties
 {
 
 
