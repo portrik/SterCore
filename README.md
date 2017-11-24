@@ -12,7 +12,7 @@ SterCore posílá zprávy přes kabely. Většinou jde o síťové kabely. Inter
 Jedna z těch věcí je lež. Neřeknu jaká. Na to musíte přijít sami.
 
 ## Jak to mám spustit?
-Stačí zajít do složky release. Někde tam jsou rary. Stačí to rozbalit. Pak nechat 10 minut podusit při 200°C. Potom stačí instalovat. A je hotov.
+Stačí zajít do složky release. Někde tam jsou rary. Stačí to rozbalit. Pak nechat 10 minut podusit při 200°C. Potom stačí instalovat. A je hotovo.
 
 Pokud jste líní či neschopní, je to [TADY](https://github.com/tehSIRius/SterCore/releases). Vše potřebné je v .rar souborech. Source code je více méně k ničemu. Pokud nechcete přijít o rozum.
 
