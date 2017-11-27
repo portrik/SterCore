@@ -107,7 +107,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "OknoServeru";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Server";
+            this.Text = "SterCore Server";
             this.ResumeLayout(false);
 
         }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UvodKlienta));
             this.TxtPrezdivka = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.PrezdivkaLabel = new MaterialSkin.Controls.MaterialLabel();
             this.BtnPripojit = new MaterialSkin.Controls.MaterialRaisedButton();
@@ -40,6 +41,7 @@
             // 
             // TxtPrezdivka
             // 
+            this.TxtPrezdivka.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.TxtPrezdivka.Depth = 0;
             this.TxtPrezdivka.Hint = "";
             this.TxtPrezdivka.Location = new System.Drawing.Point(135, 173);
@@ -169,11 +171,12 @@
             this.Controls.Add(this.BtnPripojit);
             this.Controls.Add(this.PrezdivkaLabel);
             this.Controls.Add(this.TxtPrezdivka);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(470, 470);
             this.MinimumSize = new System.Drawing.Size(470, 470);
             this.Name = "UvodKlienta";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "KlientUvod";
+            this.Text = "SterCore";
             this.Load += new System.EventHandler(this.KlientUvod_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

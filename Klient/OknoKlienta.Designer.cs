@@ -30,13 +30,11 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OknoKlienta));
             this.VypisChatu = new System.Windows.Forms.ListBox();
-            this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.GrpZpravy = new System.Windows.Forms.GroupBox();
-            this.BtnOdeslat = new MaterialSkin.Controls.MaterialRaisedButton();
             this.BtnOdpojit = new MaterialSkin.Controls.MaterialRaisedButton();
             this.LstPripojeni = new System.Windows.Forms.ListBox();
             this.LabelPripojeni = new MaterialSkin.Controls.MaterialLabel();
-            this.GrpZpravy.SuspendLayout();
+            this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.BtnOdeslat = new MaterialSkin.Controls.MaterialRaisedButton();
             this.SuspendLayout();
             // 
             // VypisChatu
@@ -46,46 +44,6 @@
             this.VypisChatu.Name = "VypisChatu";
             this.VypisChatu.Size = new System.Drawing.Size(594, 446);
             this.VypisChatu.TabIndex = 9;
-            // 
-            // TxtZprava
-            // 
-            this.TxtZprava.Depth = 0;
-            this.TxtZprava.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TxtZprava.Hint = "";
-            this.TxtZprava.Location = new System.Drawing.Point(4, 19);
-            this.TxtZprava.MouseState = MaterialSkin.MouseState.HOVER;
-            this.TxtZprava.Name = "TxtZprava";
-            this.TxtZprava.PasswordChar = '\0';
-            this.TxtZprava.SelectedText = "";
-            this.TxtZprava.SelectionLength = 0;
-            this.TxtZprava.SelectionStart = 0;
-            this.TxtZprava.Size = new System.Drawing.Size(449, 23);
-            this.TxtZprava.TabIndex = 11;
-            this.TxtZprava.UseSystemPasswordChar = false;
-            this.TxtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtZprava_KeyPress);
-            // 
-            // GrpZpravy
-            // 
-            this.GrpZpravy.Controls.Add(this.BtnOdeslat);
-            this.GrpZpravy.Controls.Add(this.TxtZprava);
-            this.GrpZpravy.Location = new System.Drawing.Point(379, 554);
-            this.GrpZpravy.Name = "GrpZpravy";
-            this.GrpZpravy.Size = new System.Drawing.Size(594, 57);
-            this.GrpZpravy.TabIndex = 17;
-            this.GrpZpravy.TabStop = false;
-            // 
-            // BtnOdeslat
-            // 
-            this.BtnOdeslat.Depth = 0;
-            this.BtnOdeslat.Location = new System.Drawing.Point(459, 12);
-            this.BtnOdeslat.MouseState = MaterialSkin.MouseState.HOVER;
-            this.BtnOdeslat.Name = "BtnOdeslat";
-            this.BtnOdeslat.Primary = true;
-            this.BtnOdeslat.Size = new System.Drawing.Size(128, 39);
-            this.BtnOdeslat.TabIndex = 21;
-            this.BtnOdeslat.Text = "Odeslat zprávu";
-            this.BtnOdeslat.UseVisualStyleBackColor = true;
-            this.BtnOdeslat.Click += new System.EventHandler(this.BtnOdeslat_Click);
             // 
             // BtnOdpojit
             // 
@@ -121,21 +79,51 @@
             this.LabelPripojeni.TabIndex = 21;
             this.LabelPripojeni.Text = "Seznam připojených uživatelů";
             // 
+            // TxtZprava
+            // 
+            this.TxtZprava.Depth = 0;
+            this.TxtZprava.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TxtZprava.Hint = "";
+            this.TxtZprava.Location = new System.Drawing.Point(378, 582);
+            this.TxtZprava.MouseState = MaterialSkin.MouseState.HOVER;
+            this.TxtZprava.Name = "TxtZprava";
+            this.TxtZprava.PasswordChar = '\0';
+            this.TxtZprava.SelectedText = "";
+            this.TxtZprava.SelectionLength = 0;
+            this.TxtZprava.SelectionStart = 0;
+            this.TxtZprava.Size = new System.Drawing.Size(449, 23);
+            this.TxtZprava.TabIndex = 11;
+            this.TxtZprava.UseSystemPasswordChar = false;
+            this.TxtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtZprava_KeyPress);
+            // 
+            // BtnOdeslat
+            // 
+            this.BtnOdeslat.Depth = 0;
+            this.BtnOdeslat.Location = new System.Drawing.Point(844, 566);
+            this.BtnOdeslat.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnOdeslat.Name = "BtnOdeslat";
+            this.BtnOdeslat.Primary = true;
+            this.BtnOdeslat.Size = new System.Drawing.Size(128, 39);
+            this.BtnOdeslat.TabIndex = 21;
+            this.BtnOdeslat.Text = "Odeslat zprávu";
+            this.BtnOdeslat.UseVisualStyleBackColor = true;
+            this.BtnOdeslat.Click += new System.EventHandler(this.BtnOdeslat_Click);
+            // 
             // OknoKlienta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(985, 680);
+            this.Controls.Add(this.BtnOdeslat);
             this.Controls.Add(this.LabelPripojeni);
+            this.Controls.Add(this.TxtZprava);
             this.Controls.Add(this.LstPripojeni);
             this.Controls.Add(this.BtnOdpojit);
-            this.Controls.Add(this.GrpZpravy);
             this.Controls.Add(this.VypisChatu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "OknoKlienta";
-            this.Text = "Klient";
+            this.Text = "SterCore";
             this.Load += new System.EventHandler(this.Klient_Load);
-            this.GrpZpravy.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -143,12 +131,11 @@
 
         #endregion
         private System.Windows.Forms.ListBox VypisChatu;
-        private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
-        private System.Windows.Forms.GroupBox GrpZpravy;
-        private MaterialSkin.Controls.MaterialRaisedButton BtnOdeslat;
         private MaterialSkin.Controls.MaterialRaisedButton BtnOdpojit;
         private System.Windows.Forms.ListBox LstPripojeni;
         private MaterialSkin.Controls.MaterialLabel LabelPripojeni;
+        private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
+        private MaterialSkin.Controls.MaterialRaisedButton BtnOdeslat;
     }
 }
 

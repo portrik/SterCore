@@ -26,22 +26,17 @@ namespace SterCore
             materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
         }
 
-        private void CheckPort_CheckedChanged(object sender, EventArgs e)
-        {
-            if(CheckPort.Checked)
-            {
-                TxtPort.Enabled = true;
-                TxtPort.TabStop = true;
-            }
-            else
-            {
-                TxtPort.Enabled = false;
-                TxtPort.TabStop = false;
-            }
-        }
+        public static bool ZmenaUdaju;       
 
+        /// <summary>
+        /// Zkontroluje údaje a pokusí se připojit na server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnPripojit_Click(object sender, EventArgs e)
         {
+            ZmenaUdaju = false;
+
             if (TxtPrezdivka.Text.Length != 0 && TxtPrezdivka.Text.Length <= 30 && !string.IsNullOrWhiteSpace(TxtPrezdivka.Text))
             {
                 IPEndPoint AdresaServeru = null;
@@ -54,7 +49,15 @@ namespace SterCore
                     OknoKlienta Okno = new OknoKlienta(TxtPrezdivka.Text, AdresaServeru);
                     Hide();
                     Okno.ShowDialog();
-                    Close();
+
+                    if (!ZmenaUdaju)
+                    {
+                        Close();
+                    }
+                    else
+                    {
+                        Show();
+                    }                    
                 }
                 catch
                 {
@@ -71,6 +74,11 @@ namespace SterCore
             }            
         }
 
+        /// <summary>
+        /// Nastaví komponenty po načtení formuláře.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void KlientUvod_Load(object sender, EventArgs e)
         {
             TxtPrezdivka.Focus();
@@ -78,6 +86,30 @@ namespace SterCore
             TxtPort.Enabled = false;
         }
 
+        /// <summary>
+        /// Podle checkboxu dovolí změnu čísla portu.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CheckPort_CheckedChanged(object sender, EventArgs e)
+        {
+            if (CheckPort.Checked)
+            {
+                TxtPort.Enabled = true;
+                TxtPort.TabStop = true;
+            }
+            else
+            {
+                TxtPort.Enabled = false;
+                TxtPort.TabStop = false;
+            }
+        }
+
+        /// <summary>
+        /// Zjednodušení zadávání údajů.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TxtPrezdivka_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)
@@ -87,6 +119,11 @@ namespace SterCore
             }
         }
 
+        /// <summary>
+        /// Zjednodušení připojení.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TxtIP_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)

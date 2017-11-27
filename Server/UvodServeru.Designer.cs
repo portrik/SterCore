@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UvodServeru));
             this.BtnServerStart = new MaterialSkin.Controls.MaterialRaisedButton();
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
             this.txtServerIP = new MaterialSkin.Controls.MaterialSingleLineTextField();
@@ -77,6 +78,7 @@
             this.txtServerIP.Size = new System.Drawing.Size(191, 23);
             this.txtServerIP.TabIndex = 11;
             this.txtServerIP.UseSystemPasswordChar = false;
+            this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
             // 
             // txtPocetKlientu
             // 
@@ -93,6 +95,7 @@
             this.txtPocetKlientu.TabIndex = 15;
             this.txtPocetKlientu.Text = "5";
             this.txtPocetKlientu.UseSystemPasswordChar = false;
+            this.txtPocetKlientu.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
             // 
             // materialLabel2
             // 
@@ -135,6 +138,7 @@
             this.txtServerPort.TabIndex = 13;
             this.txtServerPort.Text = "8888";
             this.txtServerPort.UseSystemPasswordChar = false;
+            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
             // 
             // UvodServeru
             // 
@@ -148,11 +152,12 @@
             this.Controls.Add(this.materialLabel2);
             this.Controls.Add(this.materialLabel3);
             this.Controls.Add(this.txtServerPort);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(470, 470);
             this.MinimumSize = new System.Drawing.Size(470, 470);
             this.Name = "UvodServeru";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "UvodServeru";
+            this.Text = "SterCore Server";
             this.Load += new System.EventHandler(this.UvodServeru_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -24,9 +24,17 @@ namespace SterCore
 
         IPAddress AdresaServeru;
         int Port, PocetPripojeni;
+        public static bool ZmenaUdaju;
 
+        /// <summary>
+        /// Zkontroluje zadané údaje a spustí server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnServerStart_Click(object sender, EventArgs e)
         {
+            ZmenaUdaju = false;
+
             try
             {
                 AdresaServeru = IPAddress.Parse(txtServerIP.Text);
@@ -36,7 +44,15 @@ namespace SterCore
                 OknoServeru Okno = new OknoServeru(AdresaServeru, Port, PocetPripojeni);
                 Hide();
                 Okno.ShowDialog();
-                Close();
+
+                if (!ZmenaUdaju)
+                {
+                    Close();
+                }
+                else
+                {
+                    Show();
+                }
             }
             catch
             {
@@ -46,6 +62,11 @@ namespace SterCore
             }
         }
 
+        /// <summary>
+        /// Načte hodnoty po spuštění formuláře.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UvodServeru_Load(object sender, EventArgs e)
         {
             AdresaServeru = LokalniAdresa();
@@ -54,7 +75,24 @@ namespace SterCore
             txtServerIP.SelectAll();
         }
 
-        public static IPAddress LokalniAdresa()//Získá lokální adresu serveru
+        /// <summary>
+        /// Zjednodušení startu serveru.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void StartServer_Enter(object sender, KeyPressEventArgs e)
+        {
+            if(e.KeyChar == (char)Keys.Enter)
+            {
+                BtnServerStart_Click(null, null);
+            }
+        }
+
+        /// <summary>
+        /// Získá lokální adresu zařízení.
+        /// </summary>
+        /// <returns>Lokální adresa</returns>
+        public static IPAddress LokalniAdresa()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var IP in host.AddressList)
@@ -66,6 +104,6 @@ namespace SterCore
             }
 
             return IPAddress.Parse("127.0.0.1"); //Pokud není počítač připojen k síti, vrátí loopback adresu
-        } //Zjistí lokální adresu klienta
+        }
     }
 }

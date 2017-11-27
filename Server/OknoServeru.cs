@@ -53,11 +53,19 @@ namespace SterCore
         TcpListener PrichoziKomunikace;//Poslouchá příchozí komunikaci a žádosti i připojení
         Thread BehServeru;//Thread pro běh serveru na pozadí nezávisle na hlavním okně
 
+        /// <summary>
+        /// Po načtení formuláře spustí server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OknoServeru_Shown(Object sender, EventArgs e)
         {
             StartServeru();
         }
 
+        /// <summary>
+        /// Nastaví IP adresu a port. Spustí naslouchání serveru pro připojení ve vlastním vlákně.
+        /// </summary>
         private void StartServeru()
         {
             Stop = false;//Povolí běh serveru
@@ -71,6 +79,9 @@ namespace SterCore
             BehServeru.Start();
         }
 
+        /// <summary>
+        /// Přijímá připojení klientů. Duplikátní jména jsou odpojena.
+        /// </summary>
         private void PrijmaniKlientu()//Funkce pro přijímaní připojení
         {           
             try
@@ -124,6 +135,11 @@ namespace SterCore
             }
         }
 
+        /// <summary>
+        /// Naslouchá příchozím zprávám od klienta.
+        /// </summary>
+        /// <param name="jmeno">Jméno klienta</param>
+        /// <param name="Pripojeni">Připojení klienta</param>
         private void ObsluhaKlienta(string jmeno, TcpClient Pripojeni)//Naslouchá příchozím zprávám od klienta
         {
             using (NetworkStream Cteni = Pripojeni.GetStream())//Nastaví naslouchání na správnou adresu
@@ -174,6 +190,11 @@ namespace SterCore
             }                
         }
 
+        /// <summary>
+        /// Odešle zprávu všem připojeným klientům.
+        /// </summary>
+        /// <param name="Tvurce">Jméno odesílatele</param>
+        /// <param name="Text">Obsah zprávy</param>
         private void Vysilani(string Tvurce, string Text)//Odeslání zprávy všem klientům
         {
             try
@@ -197,6 +218,11 @@ namespace SterCore
             }
         }
 
+        /// <summary>
+        /// Ukončí všechna připojení a vypne server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnServerStop_Click(object sender, EventArgs e)//Ukončení běhu serveru
         {
             foreach(DictionaryEntry Klient in SeznamKlientu)
@@ -204,9 +230,17 @@ namespace SterCore
                 (Klient.Value as TcpClient).Close();
             }
 
+            UvodServeru.ZmenaUdaju = true;
             Stop = true;
+
+            Close();
         }
 
+        /// <summary>
+        /// Zkontroluje, jestli není připojený uživatel se stejným jménem.
+        /// </summary>
+        /// <param name="Jmeno">Jméno ke kontrole</param>
+        /// <returns>Jméno je v pořádku</returns>
         private bool KontrolaJmena(string Jmeno)//Zkontroluje, zda se jméno již nevyskytuje
         {
             foreach(DictionaryEntry Klient in SeznamKlientu)
@@ -220,6 +254,10 @@ namespace SterCore
             return true;//V seznamu se nenachází
         }
 
+        /// <summary>
+        /// Odpojí klienta ze serveru.
+        /// </summary>
+        /// <param name="Jmeno">Jméno klienta</param>
         private void OdebratKlienta(string Jmeno)
         {
             --PocetPripojeni;
@@ -239,6 +277,11 @@ namespace SterCore
             Vysilani("SERVER", Jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům
         }
 
+        /// <summary>
+        /// Odešle zprávu ze serveru.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZprava_Click(object sender, EventArgs e)
         {
             if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
@@ -250,6 +293,11 @@ namespace SterCore
             }           
         }
 
+        /// <summary>
+        /// Odeslání zprávy pomocí enteru.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
         {
             if(e.KeyChar == (char)Keys.Enter)

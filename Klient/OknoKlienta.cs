@@ -34,7 +34,7 @@ namespace SterCore
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
             materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
-        } //Inicializuje okno a nastaví jeho vzhled
+        }
 
         public OknoKlienta(string Jmeno, IPEndPoint AdresaServeru)
         {
@@ -47,8 +47,11 @@ namespace SterCore
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
             materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
             Pripojeni();
-        } //Inicializuje okno a nastaví jeho vzhled
+        }
 
+        /// <summary>
+        /// Připojí se na server podle zadané adresy.
+        /// </summary>
         public void Pripojeni()
         {
             Komunikace = new TcpClient();
@@ -68,8 +71,6 @@ namespace SterCore
                     Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
                     Odesilani.Flush();//Vyprázdnění proudu
 
-                    Povoleni(GrpZpravy, true);//Zapne odesílání zpráv
-
                     Prijmani = new Thread(PrijmaniZprav)
                     {
                         IsBackground = true
@@ -85,7 +86,10 @@ namespace SterCore
             }
         }
 
-        private void PrijmaniZprav()//Příjmá zprávy od serveru
+        /// <summary>
+        /// Přijímá zprávy od serveru.
+        /// </summary>
+        private void PrijmaniZprav()
         {
             try
             {
@@ -123,36 +127,24 @@ namespace SterCore
                                 Komunikace.Dispose();
                                 break;
                             }
-                    }
-
-                    
+                    }                    
                 }
             }      
             catch
             {
                 Komunikace.Close();
                 Vypsani("Spojení bylo ukončeno");
-                Povoleni(GrpZpravy, true);
-                Povoleni(GrpZpravy, false);
                 Prijmani.Join();                
             }           
         }
 
-        private void Povoleni(GroupBox Skupina, bool Volba)
+        /// <summary>
+        /// Vypíše přijatou zprávu do okna chatu.
+        /// </summary>
+        /// <param name="Text">Přijatá zpráva</param>
+        private void Vypsani(string Text)
         {
             if(InvokeRequired)
-            {
-                Invoke((MethodInvoker)(() => Povoleni(Skupina, Volba)));
-            }
-            else
-            {
-                Skupina.Enabled = Volba;
-            }
-        }//Změní, zda je možné daný groupbox používat
-
-        private void Vypsani(string Text)//Vypsání zprávy do okna
-        {
-            if(InvokeRequired)//Invoke pro ovládání z jiného vlákna
             {
                 Invoke((MethodInvoker)(() => Vypsani(Text)));
             }
@@ -162,30 +154,26 @@ namespace SterCore
             }
         }
 
-        private void Klient_Load(object sender, EventArgs e)
-        {
-            Povoleni(GrpZpravy, false);
-            BtnOdpojit.Enabled = false;
-        }
-
-        private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if(e.KeyChar == (char)Keys.Enter)
-            {
-                BtnOdeslat_Click(null, null);
-            }
-        }//Povolí enter pro rychlé zadávání
-
+        /// <summary>
+        /// Odešle žádost o odpojení na server a otevře okno se zadáváním údajů.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnOdpojit_Click(object sender, EventArgs e)
         {
             byte[] Zprava = Encoding.UTF8.GetBytes("4φ");//Převedení zprávy na sériová data
             Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
             Odesilani.Flush();//Vyprázdnění proudu
 
-            Komunikace.Close();
-            BtnOdpojit.Enabled = false;
+            UvodKlienta.ZmenaUdaju = true;
+            Close();
         }
 
+        /// <summary>
+        /// Odešle zprávu na server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnOdeslat_Click(object sender, EventArgs e) //Odeslání zprávy
         {
             if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
@@ -198,6 +186,24 @@ namespace SterCore
                 TxtZprava.Focus();
                 TxtZprava.SelectAll();
             }            
+        }
+
+        /// <summary>
+        /// Zjednodušení odeslání zprávy.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                BtnOdeslat_Click(null, null);
+            }
+        }
+
+        private void Klient_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
