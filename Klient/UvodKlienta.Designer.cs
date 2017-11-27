@@ -30,13 +30,12 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UvodKlienta));
             this.TxtPrezdivka = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.PrezdivkaLabel = new MaterialSkin.Controls.MaterialLabel();
             this.BtnPripojit = new MaterialSkin.Controls.MaterialRaisedButton();
-            this.IPLabel = new MaterialSkin.Controls.MaterialLabel();
             this.TxtIP = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.CheckPort = new MaterialSkin.Controls.MaterialCheckBox();
-            this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.TxtPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
+            this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.SuspendLayout();
             // 
             // TxtPrezdivka
@@ -44,7 +43,7 @@
             this.TxtPrezdivka.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.TxtPrezdivka.Depth = 0;
             this.TxtPrezdivka.Hint = "";
-            this.TxtPrezdivka.Location = new System.Drawing.Point(135, 173);
+            this.TxtPrezdivka.Location = new System.Drawing.Point(135, 154);
             this.TxtPrezdivka.MouseState = MaterialSkin.MouseState.HOVER;
             this.TxtPrezdivka.Name = "TxtPrezdivka";
             this.TxtPrezdivka.PasswordChar = '\0';
@@ -55,19 +54,6 @@
             this.TxtPrezdivka.TabIndex = 0;
             this.TxtPrezdivka.UseSystemPasswordChar = false;
             this.TxtPrezdivka.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtPrezdivka_KeyPress);
-            // 
-            // PrezdivkaLabel
-            // 
-            this.PrezdivkaLabel.AutoSize = true;
-            this.PrezdivkaLabel.Depth = 0;
-            this.PrezdivkaLabel.Font = new System.Drawing.Font("Roboto", 11F);
-            this.PrezdivkaLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.PrezdivkaLabel.Location = new System.Drawing.Point(131, 151);
-            this.PrezdivkaLabel.MouseState = MaterialSkin.MouseState.HOVER;
-            this.PrezdivkaLabel.Name = "PrezdivkaLabel";
-            this.PrezdivkaLabel.Size = new System.Drawing.Size(77, 19);
-            this.PrezdivkaLabel.TabIndex = 6;
-            this.PrezdivkaLabel.Text = "Přezdívka:";
             // 
             // BtnPripojit
             // 
@@ -82,24 +68,11 @@
             this.BtnPripojit.UseVisualStyleBackColor = true;
             this.BtnPripojit.Click += new System.EventHandler(this.BtnPripojit_Click);
             // 
-            // IPLabel
-            // 
-            this.IPLabel.AutoSize = true;
-            this.IPLabel.Depth = 0;
-            this.IPLabel.Font = new System.Drawing.Font("Roboto", 11F);
-            this.IPLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.IPLabel.Location = new System.Drawing.Point(133, 210);
-            this.IPLabel.MouseState = MaterialSkin.MouseState.HOVER;
-            this.IPLabel.Name = "IPLabel";
-            this.IPLabel.Size = new System.Drawing.Size(75, 19);
-            this.IPLabel.TabIndex = 7;
-            this.IPLabel.Text = "IP adresa:";
-            // 
             // TxtIP
             // 
             this.TxtIP.Depth = 0;
             this.TxtIP.Hint = "";
-            this.TxtIP.Location = new System.Drawing.Point(135, 232);
+            this.TxtIP.Location = new System.Drawing.Point(135, 216);
             this.TxtIP.MouseState = MaterialSkin.MouseState.HOVER;
             this.TxtIP.Name = "TxtIP";
             this.TxtIP.PasswordChar = '\0';
@@ -116,7 +89,7 @@
             this.CheckPort.AutoSize = true;
             this.CheckPort.Depth = 0;
             this.CheckPort.Font = new System.Drawing.Font("Roboto", 10F);
-            this.CheckPort.Location = new System.Drawing.Point(135, 267);
+            this.CheckPort.Location = new System.Drawing.Point(135, 262);
             this.CheckPort.Margin = new System.Windows.Forms.Padding(0);
             this.CheckPort.MouseLocation = new System.Drawing.Point(-1, -1);
             this.CheckPort.MouseState = MaterialSkin.MouseState.HOVER;
@@ -128,24 +101,11 @@
             this.CheckPort.UseVisualStyleBackColor = true;
             this.CheckPort.CheckedChanged += new System.EventHandler(this.CheckPort_CheckedChanged);
             // 
-            // materialLabel2
-            // 
-            this.materialLabel2.AutoSize = true;
-            this.materialLabel2.Depth = 0;
-            this.materialLabel2.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel2.Location = new System.Drawing.Point(131, 306);
-            this.materialLabel2.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel2.Name = "materialLabel2";
-            this.materialLabel2.Size = new System.Drawing.Size(99, 19);
-            this.materialLabel2.TabIndex = 8;
-            this.materialLabel2.Text = "Adresa portu:";
-            // 
             // TxtPort
             // 
             this.TxtPort.Depth = 0;
             this.TxtPort.Hint = "";
-            this.TxtPort.Location = new System.Drawing.Point(135, 328);
+            this.TxtPort.Location = new System.Drawing.Point(135, 295);
             this.TxtPort.MouseState = MaterialSkin.MouseState.HOVER;
             this.TxtPort.Name = "TxtPort";
             this.TxtPort.PasswordChar = '\0';
@@ -158,18 +118,43 @@
             this.TxtPort.Text = "8888";
             this.TxtPort.UseSystemPasswordChar = false;
             // 
+            // materialLabel1
+            // 
+            this.materialLabel1.AutoSize = true;
+            this.materialLabel1.Depth = 0;
+            this.materialLabel1.Font = new System.Drawing.Font("Roboto", 11F);
+            this.materialLabel1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.materialLabel1.Location = new System.Drawing.Point(131, 132);
+            this.materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel1.Name = "materialLabel1";
+            this.materialLabel1.Size = new System.Drawing.Size(73, 19);
+            this.materialLabel1.TabIndex = 5;
+            this.materialLabel1.Text = "Přezdívka";
+            // 
+            // materialLabel2
+            // 
+            this.materialLabel2.AutoSize = true;
+            this.materialLabel2.Depth = 0;
+            this.materialLabel2.Font = new System.Drawing.Font("Roboto", 11F);
+            this.materialLabel2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.materialLabel2.Location = new System.Drawing.Point(131, 194);
+            this.materialLabel2.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel2.Name = "materialLabel2";
+            this.materialLabel2.Size = new System.Drawing.Size(75, 19);
+            this.materialLabel2.TabIndex = 6;
+            this.materialLabel2.Text = "IP adresa:";
+            // 
             // UvodKlienta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(470, 470);
-            this.Controls.Add(this.TxtPort);
             this.Controls.Add(this.materialLabel2);
+            this.Controls.Add(this.materialLabel1);
+            this.Controls.Add(this.TxtPort);
             this.Controls.Add(this.CheckPort);
             this.Controls.Add(this.TxtIP);
-            this.Controls.Add(this.IPLabel);
             this.Controls.Add(this.BtnPripojit);
-            this.Controls.Add(this.PrezdivkaLabel);
             this.Controls.Add(this.TxtPrezdivka);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(470, 470);
@@ -186,12 +171,11 @@
         #endregion
 
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtPrezdivka;
-        private MaterialSkin.Controls.MaterialLabel PrezdivkaLabel;
         private MaterialSkin.Controls.MaterialRaisedButton BtnPripojit;
-        private MaterialSkin.Controls.MaterialLabel IPLabel;
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtIP;
         private MaterialSkin.Controls.MaterialCheckBox CheckPort;
-        private MaterialSkin.Controls.MaterialLabel materialLabel2;
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtPort;
+        private MaterialSkin.Controls.MaterialLabel materialLabel1;
+        private MaterialSkin.Controls.MaterialLabel materialLabel2;
     }
 }

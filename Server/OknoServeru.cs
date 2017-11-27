@@ -28,14 +28,13 @@ namespace SterCore
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
             materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
-        } //Inicializuje okno a nastaví jeho vzhled
+        }
 
         public OknoServeru(IPAddress Adresa, int Port, int Pocet)
         {
             InitializeComponent();
 
-            AdresaServeru = Adresa;
-            PortServeru = Port;
+            IPAdresa = new IPEndPoint(Adresa, Port);
             PocetKlientu = Pocet;
 
             var materialSkinManager = MaterialSkinManager.Instance;
@@ -45,11 +44,12 @@ namespace SterCore
             Shown += new EventHandler(OknoServeru_Shown);
         }
 
-        public static Hashtable SeznamKlientu = new Hashtable();//Seznam připojených uživatelů a jejich adres
-        public static IPAddress AdresaServeru;
-        public static int PortServeru, PocetKlientu;//Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
-        public static int PocetPripojeni = 0;//Počet aktuálně připojených uživatelů
+        IPEndPoint IPAdresa;
+        Hashtable SeznamKlientu = new Hashtable();//Seznam připojených uživatelů a jejich adres
+        int PocetKlientu;//Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
+        int PocetPripojeni = 0;//Počet aktuálně připojených uživatelů
         bool Stop = false;//Proměná pro zastavení běhu serveru
+        bool BezpecneUkonceni = false;
         TcpListener PrichoziKomunikace;//Poslouchá příchozí komunikaci a žádosti i připojení
         Thread BehServeru;//Thread pro běh serveru na pozadí nezávisle na hlavním okně
 
@@ -69,12 +69,12 @@ namespace SterCore
         private void StartServeru()
         {
             Stop = false;//Povolí běh serveru
-            PrichoziKomunikace = new TcpListener(AdresaServeru, PortServeru);//Nastaví poslouchání žádostí a komunikace na adresu a port
+            PrichoziKomunikace = new TcpListener(IPAdresa);//Nastaví poslouchání žádostí a komunikace na adresu a port
 
             BehServeru = new Thread(PrijmaniKlientu)
             {
                 IsBackground = true
-            };//Připraví thread a nastaví jej do pozadí
+            };
 
             BehServeru.Start();
         }
@@ -82,11 +82,11 @@ namespace SterCore
         /// <summary>
         /// Přijímá připojení klientů. Duplikátní jména jsou odpojena.
         /// </summary>
-        private void PrijmaniKlientu()//Funkce pro přijímaní připojení
+        private void PrijmaniKlientu()
         {           
             try
             {
-                PrichoziKomunikace.Start();//Spustí poslouchání
+                PrichoziKomunikace.Start();
                 Invoke((MethodInvoker)(() => VypisChatu.Items.Add("Server byl spuštěn.")));
 
                 while (!Stop)
@@ -107,31 +107,25 @@ namespace SterCore
                         Thread VlaknoKlienta = new Thread(() => ObsluhaKlienta(Jmeno, Klient))
                         {
                             IsBackground = true
-                        };//Připraví thread pro obsluhu klienta a nastaví jej do pozadí
+                        };
 
                         VlaknoKlienta.Start();
                     }
                     else
                     {
                         Vysilani("SERVER", Jmeno + " se pokusil(a) připojit. Pokus byl zamítnut - duplikátní jméno");
-                        byte[] Oznameni = Encoding.UTF8.GetBytes("Pokus o připojení byl zamítnut - uživatel se stejným jménem je již připojen!");
-                        CteniJmena.Write(Oznameni, 0, Oznameni.Length);
                         CteniJmena.Flush();
-                        Klient.Close();
-                        --PocetPripojeni;
-                    }               
+                        OdebratKlienta(Klient);
+                    }
                 }
-
             }
-            catch(Exception x)//Kontrola chyb
+            catch(Exception x)
             {
-                Invoke((MethodInvoker)(() => VypisChatu.Items.Add("Objevila se chyba:")));
-                Invoke((MethodInvoker)(() => VypisChatu.Items.Add(x.Message)));//Vypíše chybu na server
-            }      
-            finally
-            {
-                PrichoziKomunikace.Stop();//Konec naslouchání
-                BehServeru.Join();
+                if(!Stop)
+                {
+                    Invoke((MethodInvoker)(() => VypisChatu.Items.Add("Objevila se chyba:")));
+                    Invoke((MethodInvoker)(() => VypisChatu.Items.Add(x.Message)));
+                }                
             }
         }
 
@@ -177,7 +171,7 @@ namespace SterCore
                                 }
                             case "4"://TODO: Odpojení
                                 {
-                                    Exception x = new EndOfStreamException();
+                                    OdebratKlienta(jmeno);
                                     break;
                                 }
                         }
@@ -219,21 +213,21 @@ namespace SterCore
         }
 
         /// <summary>
-        /// Ukončí všechna připojení a vypne server.
+        /// Ukončí všechna připojení, vypne server a vrtáí se na úvodní form.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void BtnServerStop_Click(object sender, EventArgs e)//Ukončení běhu serveru
         {
-            foreach(DictionaryEntry Klient in SeznamKlientu)
+            foreach (DictionaryEntry Klient in SeznamKlientu)
             {
                 (Klient.Value as TcpClient).Close();
             }
 
-            UvodServeru.ZmenaUdaju = true;
             Stop = true;
-
-            Close();
+            PrichoziKomunikace.Stop();
+            UvodServeru.ZmenaUdaju = true;
+            Close();    
         }
 
         /// <summary>
@@ -271,10 +265,21 @@ namespace SterCore
                 VypisKlientu.Items.Remove(Jmeno);
             }
 
-            (SeznamKlientu[Jmeno] as TcpClient).Close();
             Invoke((MethodInvoker)(() => SeznamKlientu.Remove(Jmeno)));//Odstraní klienta ze seznamu
             VypisKlientu.Items.Remove(Jmeno);
             Vysilani("SERVER", Jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům
+        }
+
+        /// <summary>
+        /// Odpojí klienta ze serveru bez zásahu do seznamů.
+        /// </summary>
+        /// <param name="Klient">Připojení klienta</param>
+        private void OdebratKlienta(TcpClient Klient)
+        {
+            --PocetPripojeni;
+
+            Klient.Close();
+            
         }
 
         /// <summary>

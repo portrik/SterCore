@@ -15,6 +15,7 @@ using System.Threading;
 using System.Collections;
 using System.IO;
 using System.Net.Sockets;
+using System.Drawing.Imaging;
 
 namespace SterCore
 {
@@ -122,11 +123,6 @@ namespace SterCore
                             {
                                 break;
                             }
-                        case "4":
-                            {
-                                Komunikace.Dispose();
-                                break;
-                            }
                     }                    
                 }
             }      
@@ -134,6 +130,8 @@ namespace SterCore
             {
                 Komunikace.Close();
                 Vypsani("Spojení bylo ukončeno");
+                UvodKlienta.ZmenaUdaju = true;
+                Close();
                 Prijmani.Join();                
             }           
         }
@@ -201,9 +199,14 @@ namespace SterCore
             }
         }
 
-        private void Klient_Load(object sender, EventArgs e)
+        private void BtnOdeslatObrazek_Click(object sender, EventArgs e)
         {
-
+            VolbaObrazku.Filter = "Obrázky|*.jpg;*.png;*.gif;*.jpeg;*.jpe;*.bmp";
+            if(VolbaObrazku.ShowDialog() == DialogResult.OK)
+            {
+                ImageConverter Konverze = new ImageConverter();
+                byte[] Bajty = (byte[])Konverze.ConvertTo(VolbaObrazku.FileName, typeof(byte[]));
+            }            
         }
     }
 }

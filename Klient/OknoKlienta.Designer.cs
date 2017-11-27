@@ -35,6 +35,8 @@
             this.LabelPripojeni = new MaterialSkin.Controls.MaterialLabel();
             this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.BtnOdeslat = new MaterialSkin.Controls.MaterialRaisedButton();
+            this.BtnOdeslatObrazek = new MaterialSkin.Controls.MaterialFlatButton();
+            this.VolbaObrazku = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // VypisChatu
@@ -109,11 +111,32 @@
             this.BtnOdeslat.UseVisualStyleBackColor = true;
             this.BtnOdeslat.Click += new System.EventHandler(this.BtnOdeslat_Click);
             // 
+            // BtnOdeslatObrazek
+            // 
+            this.BtnOdeslatObrazek.AutoSize = true;
+            this.BtnOdeslatObrazek.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BtnOdeslatObrazek.Depth = 0;
+            this.BtnOdeslatObrazek.Location = new System.Drawing.Point(844, 612);
+            this.BtnOdeslatObrazek.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.BtnOdeslatObrazek.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnOdeslatObrazek.Name = "BtnOdeslatObrazek";
+            this.BtnOdeslatObrazek.Primary = false;
+            this.BtnOdeslatObrazek.Size = new System.Drawing.Size(135, 36);
+            this.BtnOdeslatObrazek.TabIndex = 22;
+            this.BtnOdeslatObrazek.Text = "Odeslat obrázek";
+            this.BtnOdeslatObrazek.UseVisualStyleBackColor = true;
+            this.BtnOdeslatObrazek.Click += new System.EventHandler(this.BtnOdeslatObrazek_Click);
+            // 
+            // VolbaObrazku
+            // 
+            this.VolbaObrazku.FileName = "openFileDialog1";
+            // 
             // OknoKlienta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(985, 680);
+            this.Controls.Add(this.BtnOdeslatObrazek);
             this.Controls.Add(this.BtnOdeslat);
             this.Controls.Add(this.LabelPripojeni);
             this.Controls.Add(this.TxtZprava);
@@ -123,7 +146,6 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "OknoKlienta";
             this.Text = "SterCore";
-            this.Load += new System.EventHandler(this.Klient_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -136,6 +158,8 @@
         private MaterialSkin.Controls.MaterialLabel LabelPripojeni;
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
         private MaterialSkin.Controls.MaterialRaisedButton BtnOdeslat;
+        private MaterialSkin.Controls.MaterialFlatButton BtnOdeslatObrazek;
+        private System.Windows.Forms.OpenFileDialog VolbaObrazku;
     }
 }
 

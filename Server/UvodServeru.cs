@@ -56,9 +56,9 @@ namespace SterCore
             }
             catch
             {
-                MessageBox.Show("Adresa IP nebo portu byla špatně napsána!", "Chyba!");
+                /*MessageBox.Show("Adresa IP nebo portu byla špatně napsána!", "Chyba!");
                 txtServerIP.Focus();
-                txtServerIP.SelectAll();
+                txtServerIP.SelectAll();*/
             }
         }
 
