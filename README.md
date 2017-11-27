@@ -19,3 +19,7 @@ Pokud jste líní či neschopní, je to [TADY](https://github.com/tehSIRius/Ster
 ## Jak to chutná? :thinking:
 
 Nejlepší přirovnání jsou nejlevnější brambůrky z Kauflandu. Čtyři týdny prošlé. Ponechané na slunci. A větru. Dalších čtrnáct dní.
+
+## Ty ikonky vypadají hezky. Kde je seženu? :thinking:
+
+Dělali je kluci a holky z [icons8.com](https://icons8.com/). To já neumím.
