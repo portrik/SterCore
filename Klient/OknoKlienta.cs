@@ -119,8 +119,16 @@ namespace SterCore
                             {
                                 break;
                             }
-                        case "3"://TODO: Obsluha
+                        case "3"://TODO: Seznam klientů
                             {
+                                if(bool.Parse(Uprava[2]))
+                                {
+                                    Invoke((MethodInvoker)(() => LstPripojeni.Items.Add(Uprava[1])));
+                                }
+                                else
+                                {
+                                    Invoke((MethodInvoker)(() => LstPripojeni.Items.Remove(Uprava[1])));
+                                }
                                 break;
                             }
                     }                    
@@ -131,7 +139,10 @@ namespace SterCore
                 Komunikace.Close();
                 Vypsani("Spojení bylo ukončeno");
                 UvodKlienta.ZmenaUdaju = true;
-                Close();
+                if (InvokeRequired)
+                {
+                    Invoke((MethodInvoker)(() => Close()));
+                }
                 Prijmani.Join();                
             }           
         }
@@ -201,11 +212,18 @@ namespace SterCore
 
         private void BtnOdeslatObrazek_Click(object sender, EventArgs e)
         {
-            VolbaObrazku.Filter = "Obrázky|*.jpg;*.png;*.gif;*.jpeg;*.jpe;*.bmp";
-            if(VolbaObrazku.ShowDialog() == DialogResult.OK)
+            VolbaSouboru.Filter = "Obrázky|*.jpg;*.png;*.gif;*.jpeg;*.jpe;*.bmp";
+
+            if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                ImageConverter Konverze = new ImageConverter();
-                byte[] Bajty = (byte[])Konverze.ConvertTo(VolbaObrazku.FileName, typeof(byte[]));
+                MessageBox.Show("1φ" + Path.GetFileName(VolbaSouboru.FileName + "φ" + VolbaSouboru.FileName.Length));
+
+                byte[] Informace = Encoding.UTF8.GetBytes("1φ" + Path.GetFileName(VolbaSouboru.FileName + "φ" + VolbaSouboru.FileName.Length));
+
+                using (FileStream Obrazek = new FileStream(VolbaSouboru.FileName, FileMode.Open, FileAccess.Read))
+                {
+                    Obrazek.CopyTo(Odesilani);
+                }
             }            
         }
     }

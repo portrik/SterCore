@@ -49,7 +49,6 @@ namespace SterCore
         int PocetKlientu;//Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
         int PocetPripojeni = 0;//Počet aktuálně připojených uživatelů
         bool Stop = false;//Proměná pro zastavení běhu serveru
-        bool BezpecneUkonceni = false;
         TcpListener PrichoziKomunikace;//Poslouchá příchozí komunikaci a žádosti i připojení
         Thread BehServeru;//Thread pro běh serveru na pozadí nezávisle na hlavním okně
 
@@ -102,6 +101,7 @@ namespace SterCore
                     {
                         SeznamKlientu.Add(Jmeno, Klient);//Přidá klienta do seznamu
                         Invoke((MethodInvoker)(() => VypisKlientu.Items.Add(Jmeno)));//Vypíše klienta do seznamu na serveru
+                        ZmenavSeznamu(Jmeno, true);
                         Vysilani("SERVER", Jmeno + " se připojil(a)"); //Oznámí všem klientům, že se připojil někdo připojil
 
                         Thread VlaknoKlienta = new Thread(() => ObsluhaKlienta(Jmeno, Klient))
@@ -146,7 +146,7 @@ namespace SterCore
                     while (!Stop)
                     {
                         HrubaData = new byte[1024 * 1024 * 2];
-                        Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize);//Načtení sériových dat
+                        Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize);//Načtení sériových dat     
                         Zprava = Encoding.UTF8.GetString(HrubaData).TrimEnd('\0');//Dekódování a vymazání prázdných znaků
                         string[] Uprava = Zprava.Split('φ');
 
@@ -159,13 +159,24 @@ namespace SterCore
                                 }
                             case "1"://TODO: Obrázek
                                 {
+                                    byte[] Data = new byte[int.Parse(Uprava[2])];
+                                    MessageBox.Show(Uprava[1]);
+
+                                    using (FileStream Obrazek = new FileStream("Obrazek.jpg", FileMode.Create, FileAccess.Write))
+                                    {
+                                       while(Cteni.Read(Data, 0, Data.Length) > 0)
+                                       {
+                                           Obrazek.Write(Data, 0, Data.Length);
+                                       }
+                                    }
+
                                     break;
                                 }
                             case "2"://TODO: Soubor
                                 {
                                     break;
                                 }
-                            case "3"://TODO: Obsluha
+                            case "3"://TODO: Seznam klientů
                                 {
                                     break;
                                 }
@@ -210,6 +221,46 @@ namespace SterCore
                 Invoke((MethodInvoker)(() => VypisKlientu.Items.Add("Objevila se chyba:")));
                 Invoke((MethodInvoker)(() => VypisKlientu.Items.Add(x.Message)));//Vypíše chybu na server
             }
+        }
+
+        private void ZmenavSeznamu(string Jmeno, bool Akce)
+        {
+            string Zmena;
+
+            if (Akce)
+            {
+                Zmena = ("3φ" + Jmeno + "φ" + true);                
+            }
+            else
+            {
+                Zmena = ("3φ" + Jmeno + "φ" + false);
+            }
+
+            byte[] Data = Encoding.UTF8.GetBytes(Zmena);
+
+            foreach (DictionaryEntry Klient in SeznamKlientu)
+            {
+                TcpClient VysilaniSocket = (TcpClient)Klient.Value;
+                NetworkStream VysilaniProud = VysilaniSocket.GetStream();                      
+                VysilaniProud.Write(Data, 0, Data.Length);
+                VysilaniProud.Flush();
+            }
+        }
+
+        private void PredaniSeznamu(string Jmeno)
+        {
+            using (TcpClient SocketSeznamu = (TcpClient)SeznamKlientu[Jmeno])
+            {
+                NetworkStream VysilaniSeznamu = SocketSeznamu.GetStream();
+
+                foreach (DictionaryEntry Klient in SeznamKlientu)
+                {
+                    if (Klient.Key != Jmeno)
+                    {
+                        byte[] Data = Encoding.UTF8.GetBytes("3φ" + Klient.Key + "φ" + true);
+                    }
+                }
+            }                
         }
 
         /// <summary>
@@ -265,6 +316,7 @@ namespace SterCore
                 VypisKlientu.Items.Remove(Jmeno);
             }
 
+            ZmenavSeznamu(Jmeno, false);
             Invoke((MethodInvoker)(() => SeznamKlientu.Remove(Jmeno)));//Odstraní klienta ze seznamu
             VypisKlientu.Items.Remove(Jmeno);
             Vysilani("SERVER", Jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům

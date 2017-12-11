@@ -36,7 +36,7 @@
             this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.BtnOdeslat = new MaterialSkin.Controls.MaterialRaisedButton();
             this.BtnOdeslatObrazek = new MaterialSkin.Controls.MaterialFlatButton();
-            this.VolbaObrazku = new System.Windows.Forms.OpenFileDialog();
+            this.VolbaSouboru = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // VypisChatu
@@ -127,9 +127,9 @@
             this.BtnOdeslatObrazek.UseVisualStyleBackColor = true;
             this.BtnOdeslatObrazek.Click += new System.EventHandler(this.BtnOdeslatObrazek_Click);
             // 
-            // VolbaObrazku
+            // VolbaSouboru
             // 
-            this.VolbaObrazku.FileName = "openFileDialog1";
+            this.VolbaSouboru.FileName = "openFileDialog1";
             // 
             // OknoKlienta
             // 
@@ -159,7 +159,7 @@
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
         private MaterialSkin.Controls.MaterialRaisedButton BtnOdeslat;
         private MaterialSkin.Controls.MaterialFlatButton BtnOdeslatObrazek;
-        private System.Windows.Forms.OpenFileDialog VolbaObrazku;
+        private System.Windows.Forms.OpenFileDialog VolbaSouboru;
     }
 }
 
