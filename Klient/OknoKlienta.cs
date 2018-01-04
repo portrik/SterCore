@@ -30,11 +30,6 @@ namespace SterCore
         public OknoKlienta()
         {
             InitializeComponent();
-
-            var materialSkinManager = MaterialSkinManager.Instance;
-            materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
         }
 
         public OknoKlienta(string Jmeno, IPEndPoint AdresaServeru)
@@ -99,36 +94,44 @@ namespace SterCore
                     Prijem = Komunikace.GetStream();//Nastaví proud na adresu
 
                     byte[] Data = new byte[1024 * 1024 * 2];//Pole pro příjem sériových dat
+                    byte[] Znak = new byte[3];
 
                     Prijem.Read(Data, 0, Komunikace.ReceiveBufferSize);//Načtení sériových dat
-                    string Zprava = Encoding.UTF8.GetString(Data).TrimEnd('\0');//Dekódování sériových dat
-                    string[] Uprava = Zprava.Split('φ');
+
+                    Array.Copy(Data, Znak, 3);
+
+                    string Uprava = Encoding.UTF8.GetString(Znak);
 
                     switch (Uprava[0])
                     {
-                        case "0"://Běžná zpráva
+                        case '0'://Běžná zpráva
                             {
-                                Vypsani(Uprava[1] + Uprava[2]);
+                                string Dekodovani = Encoding.UTF8.GetString(Data).TrimEnd('\0');
+                                string[] Zprava = Dekodovani.Split('φ');
+                                Vypsani(Zprava[1] + Zprava[2]);
                                 break;
                             }
-                        case "1"://TODO: Zpracování obrázku
+                        case '1'://TODO: Zpracování obrázku
                             {
                                 break;
                             }
-                        case "2"://TODO: Zpracování souboru
+                        case '2'://TODO: Zpracování souboru
                             {
                                 break;
                             }
-                        case "3"://TODO: Seznam klientů
+                        case '3'://TODO: Seznam klientů
                             {
-                                if(bool.Parse(Uprava[2]))
+                                string Dekodovani = Encoding.UTF8.GetString(Data).TrimEnd('\0');
+                                string[] Seznam = Dekodovani.Split('φ');
+                                string[] Jmena = Seznam[1].Split(',');
+
+                                LstPripojeni.Items.Clear();
+
+                                foreach(string Jmeno in Jmena)
                                 {
-                                    Invoke((MethodInvoker)(() => LstPripojeni.Items.Add(Uprava[1])));
+                                    LstPripojeni.Items.Add(Jmeno);
                                 }
-                                else
-                                {
-                                    Invoke((MethodInvoker)(() => LstPripojeni.Items.Remove(Uprava[1])));
-                                }
+
                                 break;
                             }
                     }                    
@@ -208,6 +211,14 @@ namespace SterCore
             {
                 BtnOdeslat_Click(null, null);
             }
+        }
+
+        private void OknoKlienta_Load(object sender, EventArgs e)
+        {
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
         }
 
         private void BtnOdeslatObrazek_Click(object sender, EventArgs e)

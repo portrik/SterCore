@@ -23,7 +23,7 @@ namespace SterCore
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900, Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
         }
 
         public static bool ZmenaUdaju;       
@@ -81,6 +81,11 @@ namespace SterCore
         /// <param name="e"></param>
         private void KlientUvod_Load(object sender, EventArgs e)
         {
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
+
             TxtPrezdivka.Focus();
             TxtPrezdivka.SelectAll();
             TxtPort.Enabled = false;

@@ -39,31 +39,32 @@
             // VypisChatu
             // 
             this.VypisChatu.FormattingEnabled = true;
-            this.VypisChatu.Location = new System.Drawing.Point(345, 117);
+            this.VypisChatu.Location = new System.Drawing.Point(159, 74);
             this.VypisChatu.Name = "VypisChatu";
-            this.VypisChatu.Size = new System.Drawing.Size(594, 446);
+            this.VypisChatu.Size = new System.Drawing.Size(780, 485);
             this.VypisChatu.TabIndex = 6;
             // 
             // VypisKlientu
             // 
             this.VypisKlientu.FormattingEnabled = true;
-            this.VypisKlientu.Location = new System.Drawing.Point(23, 382);
+            this.VypisKlientu.Location = new System.Drawing.Point(23, 114);
             this.VypisKlientu.Name = "VypisKlientu";
-            this.VypisKlientu.Size = new System.Drawing.Size(303, 212);
+            this.VypisKlientu.Size = new System.Drawing.Size(117, 446);
             this.VypisKlientu.TabIndex = 9;
             // 
             // TxtZprava
             // 
             this.TxtZprava.Depth = 0;
+            this.TxtZprava.Font = new System.Drawing.Font("Gill Sans MT", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TxtZprava.Hint = "";
-            this.TxtZprava.Location = new System.Drawing.Point(345, 570);
+            this.TxtZprava.Location = new System.Drawing.Point(159, 583);
             this.TxtZprava.MouseState = MaterialSkin.MouseState.HOVER;
             this.TxtZprava.Name = "TxtZprava";
             this.TxtZprava.PasswordChar = '\0';
             this.TxtZprava.SelectedText = "";
             this.TxtZprava.SelectionLength = 0;
             this.TxtZprava.SelectionStart = 0;
-            this.TxtZprava.Size = new System.Drawing.Size(455, 23);
+            this.TxtZprava.Size = new System.Drawing.Size(641, 23);
             this.TxtZprava.TabIndex = 11;
             this.TxtZprava.UseSystemPasswordChar = false;
             this.TxtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtZprava_KeyPress);
@@ -71,7 +72,7 @@
             // BtnZprava
             // 
             this.BtnZprava.Depth = 0;
-            this.BtnZprava.Location = new System.Drawing.Point(806, 569);
+            this.BtnZprava.Location = new System.Drawing.Point(806, 565);
             this.BtnZprava.MouseState = MaterialSkin.MouseState.HOVER;
             this.BtnZprava.Name = "BtnZprava";
             this.BtnZprava.Primary = true;
@@ -84,7 +85,7 @@
             // BtnServerStop
             // 
             this.BtnServerStop.Depth = 0;
-            this.BtnServerStop.Location = new System.Drawing.Point(33, 324);
+            this.BtnServerStop.Location = new System.Drawing.Point(23, 74);
             this.BtnServerStop.MouseState = MaterialSkin.MouseState.HOVER;
             this.BtnServerStop.Name = "BtnServerStop";
             this.BtnServerStop.Primary = true;
@@ -98,13 +99,16 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(951, 622);
+            this.ClientSize = new System.Drawing.Size(950, 620);
             this.Controls.Add(this.BtnServerStop);
             this.Controls.Add(this.BtnZprava);
             this.Controls.Add(this.TxtZprava);
             this.Controls.Add(this.VypisKlientu);
             this.Controls.Add(this.VypisChatu);
+            this.ForeColor = System.Drawing.Color.White;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximumSize = new System.Drawing.Size(950, 620);
+            this.MinimumSize = new System.Drawing.Size(950, 620);
             this.Name = "OknoServeru";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SterCore Server";

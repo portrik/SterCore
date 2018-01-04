@@ -20,6 +20,10 @@ namespace SterCore
         public UvodServeru()
         {
             InitializeComponent();
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100, Accent.Red400, TextShade.WHITE);
         }
 
         IPAddress AdresaServeru;
