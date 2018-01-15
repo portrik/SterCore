@@ -38,10 +38,12 @@ namespace SterCore
 
             Prezdivka = Jmeno;
             Adresa = AdresaServeru;
+
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900, Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+
             Pripojeni();
         }
 
@@ -56,14 +58,11 @@ namespace SterCore
             {
                 Komunikace.Connect(Adresa);//Pokus o připojení na zadanou adresu a port
 
-                VypisChatu.Items.Add("Připojuji se k serveru...");
-                BtnOdpojit.Enabled = true;
-
                 if (Komunikace.Connected)
                 {
                     Odesilani = Komunikace.GetStream();//Nastavení proudu na adresu
-                    VypisChatu.Items.Add("Připojení bylo úspěšné!");
-                    byte[] Jmeno = Encoding.UTF8.GetBytes(Prezdivka);//Převedení přezdívky na byty
+                    VypisChatu.Text += DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Připojení bylo úspěšné!";
+                    byte[] Jmeno = Encoding.Unicode.GetBytes(Prezdivka);//Převedení přezdívky na byty
                     Odesilani.Write(Jmeno, 0, Jmeno.Length);//Odeslání přezdívky
                     Odesilani.Flush();//Vyprázdnění proudu
 
@@ -77,8 +76,8 @@ namespace SterCore
             }
             catch (Exception x)
             {
-                VypisChatu.Items.Add("Objevila se chyba: ");
-                VypisChatu.Items.Add(x.Message);
+                VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba: ";
+                VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + x.Message;
             }
         }
 
@@ -89,63 +88,68 @@ namespace SterCore
         {
             try
             {
-                while (Komunikace.Connected)
+                using (Prijem = Komunikace.GetStream())
                 {
-                    Prijem = Komunikace.GetStream();//Nastaví proud na adresu
-
-                    byte[] Data = new byte[1024 * 1024 * 2];//Pole pro příjem sériových dat
-                    byte[] Znak = new byte[3];
-
-                    Prijem.Read(Data, 0, Komunikace.ReceiveBufferSize);//Načtení sériových dat
-
-                    Array.Copy(Data, Znak, 3);
-
-                    string Uprava = Encoding.UTF8.GetString(Znak);
-
-                    switch (Uprava[0])
+                    while (Komunikace.Connected)
                     {
-                        case '0'://Běžná zpráva
-                            {
-                                string Dekodovani = Encoding.UTF8.GetString(Data).TrimEnd('\0');
-                                string[] Zprava = Dekodovani.Split('φ');
-                                Vypsani(Zprava[1] + Zprava[2]);
-                                break;
-                            }
-                        case '1'://TODO: Zpracování obrázku
-                            {
-                                break;
-                            }
-                        case '2'://TODO: Zpracování souboru
-                            {
-                                break;
-                            }
-                        case '3'://TODO: Seznam klientů
-                            {
-                                string Dekodovani = Encoding.UTF8.GetString(Data).TrimEnd('\0');
-                                string[] Seznam = Dekodovani.Split('φ');
-                                string[] Jmena = Seznam[1].Split(',');
+                        byte[] Data = new byte[1024 * 1024 * 4];//Pole pro příjem sériových dat
+                        byte[] Znak = new byte[3];
 
-                                LstPripojeni.Items.Clear();
+                        Prijem.Read(Data, 0, Komunikace.ReceiveBufferSize);//Načtení sériových dat
 
-                                foreach(string Jmeno in Jmena)
+                        Array.Copy(Data, Znak, 3);
+
+                        string Uprava = Encoding.Unicode.GetString(Znak);
+
+                        switch (Uprava[0])
+                        {
+                            case '0'://Běžná zpráva
                                 {
-                                    LstPripojeni.Items.Add(Jmeno);
+                                    string Dekodovani = Encoding.Unicode.GetString(Data).TrimEnd('\0');
+                                    string[] Zprava = Dekodovani.Split('φ');
+                                    Vypsani(Zprava[1] + Zprava[2]);
+                                    break;
                                 }
+                            case '1'://TODO: Zpracování obrázku
+                                {
+                                    break;
+                                }
+                            case '2'://TODO: Zpracování souboru
+                                {
+                                    break;
+                                }
+                            case '3'://TODO: Seznam klientů
+                                {
+                                    string Dekodovani = Encoding.Unicode.GetString(Data).TrimEnd('\0');
+                                    string[] Seznam = Dekodovani.Split('φ');
+                                    string[] Jmena = Seznam[1].Split(',');
 
-                                break;
-                            }
+                                    foreach (string Jmeno in Jmena)
+                                    {
+                                        if (InvokeRequired)
+                                        {
+                                            Invoke((MethodInvoker)(() => LstPripojeni.Items.Add(Jmeno)));
+                                        }
+                                    }
+
+                                    break;
+                                }
+                        }                        
                     }                    
                 }
             }      
-            catch
+            catch(Exception x)
             {
-                Komunikace.Close();
+                MessageBox.Show(x.Message);
+                MessageBox.Show(x.StackTrace);
                 Vypsani("Spojení bylo ukončeno");
                 UvodKlienta.ZmenaUdaju = true;
+
                 if (InvokeRequired)
                 {
                     Invoke((MethodInvoker)(() => Close()));
                 }
+
                 Prijmani.Join();                
             }           
         }
@@ -162,7 +166,7 @@ namespace SterCore
             }
             else
             {
-                VypisChatu.Items.Add(Text);
+                VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + Text;
             }
         }
 
@@ -173,7 +177,7 @@ namespace SterCore
         /// <param name="e"></param>
         private void BtnOdpojit_Click(object sender, EventArgs e)
         {
-            byte[] Zprava = Encoding.UTF8.GetBytes("4φ");//Převedení zprávy na sériová data
+            byte[] Zprava = Encoding.Unicode.GetBytes("4φ");//Převedení zprávy na sériová data
             Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
             Odesilani.Flush();//Vyprázdnění proudu
 
@@ -190,7 +194,7 @@ namespace SterCore
         {
             if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
             {
-                byte[] Zprava = Encoding.UTF8.GetBytes("0φ" + TxtZprava.Text.Trim());//Převedení zprávy na sériová data
+                byte[] Zprava = Encoding.Unicode.GetBytes("0φ" + TxtZprava.Text.Trim());//Převedení zprávy na sériová data
                 Odesilani.Write(Zprava, 0, Zprava.Length);//Odeslání sériových dat
                 Odesilani.Flush();//Vyprázdnění proudu
 
@@ -213,29 +217,74 @@ namespace SterCore
             }
         }
 
-        private void OknoKlienta_Load(object sender, EventArgs e)
-        {
-            var materialSkinManager = MaterialSkinManager.Instance;
-            materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
-        }
-
-        private void BtnOdeslatObrazek_Click(object sender, EventArgs e)
+        private void OdeslaniObrazku_Click(object sender, EventArgs e)
         {
             VolbaSouboru.Filter = "Obrázky|*.jpg;*.png;*.gif;*.jpeg;*.jpe;*.bmp";
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("1φ" + Path.GetFileName(VolbaSouboru.FileName + "φ" + VolbaSouboru.FileName.Length));
+                byte[] Obrazek = File.ReadAllBytes(VolbaSouboru.FileName); 
 
-                byte[] Informace = Encoding.UTF8.GetBytes("1φ" + Path.GetFileName(VolbaSouboru.FileName + "φ" + VolbaSouboru.FileName.Length));
-
-                using (FileStream Obrazek = new FileStream(VolbaSouboru.FileName, FileMode.Open, FileAccess.Read))
+                if(Obrazek.Length < 4194040)
                 {
-                    Obrazek.CopyTo(Odesilani);
+                    try
+                    {
+                        string Cesta = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ";
+                        byte[] Znacka = Encoding.Unicode.GetBytes(Cesta);
+                        byte[] Zprava = new byte[1024 * 1024 * 4];
+
+                        Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
+                        Array.Copy(Obrazek, 0, Zprava, 264, Obrazek.Length);
+
+                        Odesilani.Write(Zprava, 0, Zprava.Length);
+                        Odesilani.Flush();
+                    }
+                    catch(Exception x)
+                    {
+                        MessageBox.Show(x.StackTrace);
+                        MessageBox.Show(x.Message);
+                    }
+                   
                 }
-            }            
+                else
+                {
+                    MessageBox.Show("Zvolený obrázek je pro přenos příliš velký!", "Chyba!");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Při zapsání nové zprávy skočí na poslední zprávu.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void VypisChatu_TextChanged(object sender, EventArgs e)
+        {
+            VypisChatu.SelectionStart = VypisChatu.Text.Length;
+            VypisChatu.ScrollToCaret();
+        }
+
+        /// <summary>
+        /// Po kliknutí na odkaz otevře webovou stránku v prohlížeči.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">Odkaz webové stránky</param>
+        private void VypisChatu_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.LinkText);
+        }
+
+        private void OknoKlienta_Load(object sender, EventArgs e)
+        {
+            VypisChatu.BackColor = Color.White;
+        }
+
+        private void OdeslatSoubor_Click(object sender, EventArgs e)
+        {
+            if (VolbaSouboru.ShowDialog() == DialogResult.OK)
+            {
+                
+            }
         }
     }
 }

@@ -81,11 +81,6 @@ namespace SterCore
         /// <param name="e"></param>
         private void KlientUvod_Load(object sender, EventArgs e)
         {
-            var materialSkinManager = MaterialSkinManager.Instance;
-            materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
-
             TxtPrezdivka.Focus();
             TxtPrezdivka.SelectAll();
             TxtPort.Enabled = false;

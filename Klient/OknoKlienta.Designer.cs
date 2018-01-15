@@ -29,21 +29,17 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OknoKlienta));
-            this.VypisChatu = new System.Windows.Forms.ListBox();
             this.BtnOdpojit = new MaterialSkin.Controls.MaterialRaisedButton();
             this.LstPripojeni = new System.Windows.Forms.ListBox();
             this.TxtZprava = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.BtnOdeslat = new MaterialSkin.Controls.MaterialRaisedButton();
             this.VolbaSouboru = new System.Windows.Forms.OpenFileDialog();
+            this.OdeslatSoubor = new System.Windows.Forms.PictureBox();
+            this.OdeslaniObrazku = new System.Windows.Forms.PictureBox();
+            this.VypisChatu = new System.Windows.Forms.RichTextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.OdeslatSoubor)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.OdeslaniObrazku)).BeginInit();
             this.SuspendLayout();
-            // 
-            // VypisChatu
-            // 
-            this.VypisChatu.FormattingEnabled = true;
-            this.VypisChatu.Location = new System.Drawing.Point(159, 74);
-            this.VypisChatu.Name = "VypisChatu";
-            this.VypisChatu.Size = new System.Drawing.Size(780, 485);
-            this.VypisChatu.TabIndex = 9;
             // 
             // BtnOdpojit
             // 
@@ -100,33 +96,75 @@
             // 
             this.VolbaSouboru.FileName = "openFileDialog1";
             // 
+            // OdeslatSoubor
+            // 
+            this.OdeslatSoubor.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.OdeslatSoubor.Image = global::Klient.Properties.Resources.SouborKlienta;
+            this.OdeslatSoubor.Location = new System.Drawing.Point(23, 565);
+            this.OdeslatSoubor.Name = "OdeslatSoubor";
+            this.OdeslatSoubor.Size = new System.Drawing.Size(48, 48);
+            this.OdeslatSoubor.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.OdeslatSoubor.TabIndex = 23;
+            this.OdeslatSoubor.TabStop = false;
+            this.OdeslatSoubor.Click += new System.EventHandler(this.OdeslatSoubor_Click);
+            // 
+            // OdeslaniObrazku
+            // 
+            this.OdeslaniObrazku.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.OdeslaniObrazku.Image = global::Klient.Properties.Resources.ObrazekKlienta;
+            this.OdeslaniObrazku.Location = new System.Drawing.Point(92, 565);
+            this.OdeslaniObrazku.Name = "OdeslaniObrazku";
+            this.OdeslaniObrazku.Size = new System.Drawing.Size(48, 48);
+            this.OdeslaniObrazku.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.OdeslaniObrazku.TabIndex = 22;
+            this.OdeslaniObrazku.TabStop = false;
+            this.OdeslaniObrazku.Click += new System.EventHandler(this.OdeslaniObrazku_Click);
+            // 
+            // VypisChatu
+            // 
+            this.VypisChatu.Font = new System.Drawing.Font("Lucida Sans", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.VypisChatu.Location = new System.Drawing.Point(147, 74);
+            this.VypisChatu.Name = "VypisChatu";
+            this.VypisChatu.ReadOnly = true;
+            this.VypisChatu.Size = new System.Drawing.Size(787, 485);
+            this.VypisChatu.TabIndex = 24;
+            this.VypisChatu.Text = "";
+            this.VypisChatu.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.VypisChatu_LinkClicked);
+            this.VypisChatu.TextChanged += new System.EventHandler(this.VypisChatu_TextChanged);
+            // 
             // OknoKlienta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(950, 620);
+            this.Controls.Add(this.VypisChatu);
+            this.Controls.Add(this.OdeslatSoubor);
+            this.Controls.Add(this.OdeslaniObrazku);
             this.Controls.Add(this.BtnOdeslat);
             this.Controls.Add(this.TxtZprava);
             this.Controls.Add(this.LstPripojeni);
             this.Controls.Add(this.BtnOdpojit);
-            this.Controls.Add(this.VypisChatu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(950, 620);
             this.MinimumSize = new System.Drawing.Size(950, 620);
             this.Name = "OknoKlienta";
             this.Text = "SterCore";
             this.Load += new System.EventHandler(this.OknoKlienta_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.OdeslatSoubor)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.OdeslaniObrazku)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-        private System.Windows.Forms.ListBox VypisChatu;
         private MaterialSkin.Controls.MaterialRaisedButton BtnOdpojit;
         private System.Windows.Forms.ListBox LstPripojeni;
         private MaterialSkin.Controls.MaterialSingleLineTextField TxtZprava;
         private MaterialSkin.Controls.MaterialRaisedButton BtnOdeslat;
         private System.Windows.Forms.OpenFileDialog VolbaSouboru;
+        private System.Windows.Forms.PictureBox OdeslaniObrazku;
+        private System.Windows.Forms.PictureBox OdeslatSoubor;
+        private System.Windows.Forms.RichTextBox VypisChatu;
     }
 }
 
