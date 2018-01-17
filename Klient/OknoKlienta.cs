@@ -21,11 +21,12 @@ namespace SterCore
 {
     public partial class OknoKlienta : MaterialForm
     {
-        string Prezdivka;//Přezdívka klienta
-        TcpClient Komunikace;//TcpClient pro komunkaci se serverem
+        string Prezdivka;
+        TcpClient Komunikace;
         IPEndPoint Adresa = null;
-        NetworkStream Prijem, Odesilani = default(NetworkStream);//Proudy pro přijímání a odesílání informací
+        NetworkStream Prijem, Odesilani = default(NetworkStream);
         Thread Prijmani;
+        string Slozka = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory");
 
         public OknoKlienta()
         {
@@ -112,10 +113,12 @@ namespace SterCore
                                 }
                             case '1'://TODO: Zpracování obrázku
                                 {
+                                    ZpracovaniSouboru(Data, "Obrazek");
                                     break;
                                 }
                             case '2'://TODO: Zpracování souboru
                                 {
+                                    ZpracovaniSouboru(Data, "Soubor");
                                     break;
                                 }
                             case '3'://TODO: Seznam klientů
@@ -167,6 +170,76 @@ namespace SterCore
             else
             {
                 VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + Text;
+            }
+        }
+
+        /// <summary>
+        /// Zjistí, zda zadaný adresář existuje.
+        /// </summary>
+        /// <param name="Cesta">Cesta k adresáři</param>
+        /// <returns>True - složka existuje, False - složka neexistuje</returns>
+        private bool SlozkaSouboru(string Cesta)
+        {
+            if (Directory.Exists(Cesta))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Uloží přijatý soubor do příslušné složky.
+        /// </summary>
+        /// <param name="Data">Přijatá data souboru</param>
+        /// <param name="Druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
+        private void ZpracovaniSouboru(byte[] Data, string Druh)
+        {
+            byte[] Soubor = new byte[1024 * 1024 * 4];
+            byte[] Nazev = new byte[264];
+
+
+            Array.Copy(Data, 264, Soubor, 0, 4194040);
+            Array.Copy(Data, 0, Nazev, 0, 264);
+
+            string Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
+            string[] NazevSouboru = Prevod.Split('φ');
+            string SlozkaServer = Path.Combine(Slozka, "Klient");
+            string SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+
+            if (!SlozkaSouboru(Slozka))
+            {
+                Directory.CreateDirectory(Slozka);
+            }
+
+            if (!SlozkaSouboru(SlozkaServer))
+            {
+                Directory.CreateDirectory(SlozkaServer);
+            }
+
+            if (!SlozkaSouboru(SlozkaDruh))
+            {
+                Directory.CreateDirectory(SlozkaDruh);
+            }
+
+            string Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
+
+            if (File.Exists(Cesta))
+            {
+                int Index = 1;
+
+                while (File.Exists(Cesta))
+                {
+                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient", Druh) + @"\" + NazevSouboru[1] + "(" + Index.ToString() + ")" + NazevSouboru[2];
+                    ++Index;
+                }
+            }
+
+            using (MemoryStream UlozeniSoubour = new MemoryStream(Soubor))
+            {
+                File.WriteAllBytes(Cesta, Soubor);
             }
         }
 
@@ -223,12 +296,13 @@ namespace SterCore
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                byte[] Obrazek = File.ReadAllBytes(VolbaSouboru.FileName); 
+                byte[] Obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if(Obrazek.Length < 4194040)
+                if (Obrazek.Length < 4194040)
                 {
                     try
                     {
+                        string Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + Path.GetExtension(VolbaSouboru.FileName);
                         string Cesta = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ";
                         byte[] Znacka = Encoding.Unicode.GetBytes(Cesta);
                         byte[] Zprava = new byte[1024 * 1024 * 4];
@@ -236,19 +310,20 @@ namespace SterCore
                         Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
                         Array.Copy(Obrazek, 0, Zprava, 264, Obrazek.Length);
 
-                        Odesilani.Write(Zprava, 0, Zprava.Length);
-                        Odesilani.Flush();
+                        VyslaniSouboru(Zprava);
+
+                       
                     }
-                    catch(Exception x)
+                    catch (Exception x)
                     {
                         MessageBox.Show(x.StackTrace);
                         MessageBox.Show(x.Message);
                     }
-                   
+
                 }
                 else
                 {
-                    MessageBox.Show("Zvolený obrázek je pro přenos příliš velký!", "Chyba!");
+                    MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
                 }
             }
         }
@@ -283,7 +358,52 @@ namespace SterCore
         {
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                
+                VolbaSouboru.Filter = null;
+
+                if (VolbaSouboru.ShowDialog() == DialogResult.OK)
+                {
+                    byte[] Soubor = File.ReadAllBytes(VolbaSouboru.FileName);
+
+                    if (Soubor.Length < 4194040)
+                    {
+                        try
+                        {
+                            string Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + Path.GetExtension(VolbaSouboru.FileName);
+                            string Cesta = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ";
+                            byte[] Znacka = Encoding.Unicode.GetBytes(Cesta);
+                            byte[] Zprava = new byte[1024 * 1024 * 4];
+
+                            Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
+                            Array.Copy(Soubor, 0, Zprava, 264, Soubor.Length);
+
+                            VyslaniSouboru(Zprava);
+                        }
+                        catch (Exception x)
+                        {
+                            MessageBox.Show(x.StackTrace);
+                            MessageBox.Show(x.Message);
+                        }
+
+                    }
+                    else
+                    {
+                        MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
+                    }
+                }
+            }
+        }
+
+        private void VyslaniSouboru(byte[] Data)
+        {
+            try
+            {
+                Odesilani.Write(Data, 0, Data.Length);
+                Odesilani.Flush();
+            }
+            catch (Exception x)
+            {
+                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba:"));
+                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + x.Message));
             }
         }
     }

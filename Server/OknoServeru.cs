@@ -127,6 +127,7 @@ namespace SterCore
                         byte[] Znacka = new byte[4];
                         Array.Copy(HrubaData, Znacka, 4); //Zkopíruje první tři bajty z hrubých dat  
                         string Uprava = Encoding.Unicode.GetString(Znacka);
+                        string NazevSouboru = null;
 
                         switch (Uprava[0])
                         {
@@ -134,19 +135,18 @@ namespace SterCore
                                 {
                                     string Data = Encoding.Unicode.GetString(HrubaData).TrimEnd('\0');
                                     string[] Zprava = Data.Split('φ');
-                                    Vysilani(jmeno, Zprava[1]);//Vyslání zprávy všem klientům
+                                    Vysilani(jmeno, Zprava[1]);
                                     break;
                                 }
-                            case '1'://TODO: Obrázek
+                            case '1'://Obrázek
                                 {
-                                    ZpracovaniSouboru(HrubaData, "Obrazek");
-
-
-                                    break;
+                                    VysilaniObrazku(ZpracovaniSouboru(HrubaData, "Obrazek", out NazevSouboru), jmeno, NazevSouboru);
+                                    
+                                   break;
                                 }
-                            case '2'://TODO: Soubor
+                            case '2'://Soubor
                                 {
-                                    ZpracovaniSouboru(HrubaData, "Soubor");
+                                    VysilaniSouboru(ZpracovaniSouboru(HrubaData, "Soubor", out NazevSouboru), jmeno, NazevSouboru);
 
                                     break;
                                 }
@@ -154,7 +154,7 @@ namespace SterCore
                                 {
                                     break;
                                 }
-                            case '4'://TODO: Odpojení
+                            case '4'://Odpojení
                                 {
                                     OdebratKlienta(jmeno);
                                     break;
@@ -240,6 +240,57 @@ namespace SterCore
         /// </summary>
         /// <param name="Data">Přijatá data souboru</param>
         /// <param name="Druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
+        private byte[] ZpracovaniSouboru(byte[] Data, string Druh, out string nazevsouboru)
+        {
+            byte[] Soubor = new byte[1024 * 1024 * 4];
+            byte[] Nazev = new byte[264];
+
+
+            Array.Copy(Data, 264, Soubor, 0, 4194040);
+            Array.Copy(Data, 0, Nazev, 0, 264);
+
+            string Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
+            string[] NazevSouboru = Prevod.Split('φ');
+            nazevsouboru = NazevSouboru[1] + NazevSouboru[2];
+            string SlozkaServer = Path.Combine(Slozka, "Server");
+            string SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+
+            if (!SlozkaSouboru(Slozka))
+            {
+                Directory.CreateDirectory(Slozka);
+            }
+
+            if(!SlozkaSouboru(SlozkaServer))
+            {
+                Directory.CreateDirectory(SlozkaServer);
+            }
+
+            if(!SlozkaSouboru(SlozkaDruh))
+            {
+                Directory.CreateDirectory(SlozkaDruh);
+            }
+
+            string Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + nazevsouboru;
+
+            if (File.Exists(Cesta))
+            {
+                int Index = 1;
+
+                while (File.Exists(Cesta))
+                {
+                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + "(" + Index.ToString() + ")" + NazevSouboru[2];
+                    ++Index;
+                }
+            }
+
+            using (MemoryStream UlozeniSoubour = new MemoryStream(Soubor))
+            {
+                File.WriteAllBytes(Cesta, Soubor);
+            }
+
+            return Soubor;
+        }
+
         private void ZpracovaniSouboru(byte[] Data, string Druh)
         {
             byte[] Soubor = new byte[1024 * 1024 * 4];
@@ -259,12 +310,12 @@ namespace SterCore
                 Directory.CreateDirectory(Slozka);
             }
 
-            if(!SlozkaSouboru(SlozkaServer))
+            if (!SlozkaSouboru(SlozkaServer))
             {
                 Directory.CreateDirectory(SlozkaServer);
             }
 
-            if(!SlozkaSouboru(SlozkaDruh))
+            if (!SlozkaSouboru(SlozkaDruh))
             {
                 Directory.CreateDirectory(SlozkaDruh);
             }
@@ -285,7 +336,7 @@ namespace SterCore
             using (MemoryStream UlozeniSoubour = new MemoryStream(Soubor))
             {
                 File.WriteAllBytes(Cesta, Soubor);
-            }                
+            }
         }
 
         /// <summary>
@@ -538,7 +589,7 @@ namespace SterCore
                 }
                 else
                 {
-                    MessageBox.Show("Zvolený obrázek je pro přenos příliš velký!", "Chyba!");
+                    MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
                 }
             }
         }
@@ -576,7 +627,7 @@ namespace SterCore
                 }
                 else
                 {
-                    MessageBox.Show("Zvolený soubor je pro přenos příliš velký!", "Chyba!");
+                    MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
                 }
             }
         }
