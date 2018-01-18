@@ -140,13 +140,15 @@ namespace SterCore
                                 }
                             case '1'://Obrázek
                                 {
-                                    VysilaniObrazku(ZpracovaniSouboru(HrubaData, "Obrazek", out NazevSouboru), jmeno, NazevSouboru);
-                                    
+                                    ZpracovaniSouboru(HrubaData, "Obrazek", out NazevSouboru);
+                                    VysilaniObrazku(HrubaData, jmeno, NazevSouboru);
+
                                    break;
                                 }
                             case '2'://Soubor
                                 {
-                                    VysilaniSouboru(ZpracovaniSouboru(HrubaData, "Soubor", out NazevSouboru), jmeno, NazevSouboru);
+                                    ZpracovaniSouboru(HrubaData, "Soubor", out NazevSouboru);
+                                    VysilaniSouboru(HrubaData, jmeno, NazevSouboru);
 
                                     break;
                                 }
@@ -240,37 +242,37 @@ namespace SterCore
         /// </summary>
         /// <param name="Data">Přijatá data souboru</param>
         /// <param name="Druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
-        private byte[] ZpracovaniSouboru(byte[] Data, string Druh, out string nazevsouboru)
+        private void ZpracovaniSouboru(byte[] Data, string Druh)
         {
             byte[] Soubor = new byte[1024 * 1024 * 4];
-            byte[] Nazev = new byte[264];
+            byte[] Nazev = new byte[300];
 
-
-            Array.Copy(Data, 264, Soubor, 0, 4194040);
-            Array.Copy(Data, 0, Nazev, 0, 264);
+            Array.Copy(Data, 0, Nazev, 0, 300);
 
             string Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
             string[] NazevSouboru = Prevod.Split('φ');
-            nazevsouboru = NazevSouboru[1] + NazevSouboru[2];
-            string SlozkaServer = Path.Combine(Slozka, "Server");
+            int DelkaSouboru = int.Parse(NazevSouboru[3]);
+            string SlozkaServer = Path.Combine(Slozka, "Klient");
             string SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+
+            Array.Copy(Data, 300, Soubor, 0, DelkaSouboru);
 
             if (!SlozkaSouboru(Slozka))
             {
                 Directory.CreateDirectory(Slozka);
             }
 
-            if(!SlozkaSouboru(SlozkaServer))
+            if (!SlozkaSouboru(SlozkaServer))
             {
                 Directory.CreateDirectory(SlozkaServer);
             }
 
-            if(!SlozkaSouboru(SlozkaDruh))
+            if (!SlozkaSouboru(SlozkaDruh))
             {
                 Directory.CreateDirectory(SlozkaDruh);
             }
 
-            string Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + nazevsouboru;
+            string Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
 
             if (File.Exists(Cesta))
             {
@@ -287,23 +289,23 @@ namespace SterCore
             {
                 File.WriteAllBytes(Cesta, Soubor);
             }
-
-            return Soubor;
         }
 
-        private void ZpracovaniSouboru(byte[] Data, string Druh)
+        private void ZpracovaniSouboru(byte[] Data, string Druh, out string nazevsouboru)
         {
             byte[] Soubor = new byte[1024 * 1024 * 4];
-            byte[] Nazev = new byte[264];
+            byte[] Nazev = new byte[300];
 
-
-            Array.Copy(Data, 264, Soubor, 0, 4194040);
-            Array.Copy(Data, 0, Nazev, 0, 264);
+            Array.Copy(Data, 0, Nazev, 0, 300);
 
             string Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
             string[] NazevSouboru = Prevod.Split('φ');
-            string SlozkaServer = Path.Combine(Slozka, "Server");
+            nazevsouboru = NazevSouboru[1] + NazevSouboru[2];
+            int DelkaSouboru = int.Parse(NazevSouboru[3]);
+            string SlozkaServer = Path.Combine(Slozka, "Klient");
             string SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+
+            Array.Copy(Data, 300, Soubor, 0, DelkaSouboru);
 
             if (!SlozkaSouboru(Slozka))
             {
@@ -564,17 +566,17 @@ namespace SterCore
             {
                 byte[] Obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (Obrazek.Length < 4194040)
+                if (Obrazek.Length < 4194004)
                 {
                     try
                     {
                         string Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + Path.GetExtension(VolbaSouboru.FileName);
-                        string Cesta = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ";
-                        byte[] Znacka = Encoding.Unicode.GetBytes(Cesta);
+                        string MetaData = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ" + Obrazek.Length.ToString() + "φ";
+                        byte[] Znacka = Encoding.Unicode.GetBytes(MetaData);
                         byte[] Zprava = new byte[1024 * 1024 * 4];
 
                         Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
-                        Array.Copy(Obrazek, 0, Zprava, 264, Obrazek.Length);
+                        Array.Copy(Obrazek, 0, Zprava, 300, Obrazek.Length);
 
                         ZpracovaniSouboru(Zprava, "Obrazek");
 
@@ -602,17 +604,17 @@ namespace SterCore
             {
                 byte[] Soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (Soubor.Length < 4194040)
+                if (Soubor.Length < 4194004)
                 {
                     try
                     {
                         string Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + Path.GetExtension(VolbaSouboru.FileName);
-                        string Cesta = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ";
-                        byte[] Znacka = Encoding.Unicode.GetBytes(Cesta);
+                        string MetaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ" + Soubor.Length.ToString() + "φ";
+                        byte[] Znacka = Encoding.Unicode.GetBytes(MetaData);
                         byte[] Zprava = new byte[1024 * 1024 * 4];
 
                         Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
-                        Array.Copy(Soubor, 0, Zprava, 264, Soubor.Length);
+                        Array.Copy(Soubor, 0, Zprava, 300, Soubor.Length);
 
                         ZpracovaniSouboru(Zprava, "Soubor");
 
