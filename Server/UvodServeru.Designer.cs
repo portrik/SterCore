@@ -36,6 +36,7 @@
             this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
             this.txtServerPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
+            this.BtnRozsNastaveni = new MaterialSkin.Controls.MaterialFlatButton();
             this.SuspendLayout();
             // 
             // BtnServerStart
@@ -140,11 +141,28 @@
             this.txtServerPort.UseSystemPasswordChar = false;
             this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
             // 
+            // BtnRozsNastaveni
+            // 
+            this.BtnRozsNastaveni.AutoSize = true;
+            this.BtnRozsNastaveni.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BtnRozsNastaveni.Depth = 0;
+            this.BtnRozsNastaveni.Location = new System.Drawing.Point(94, 306);
+            this.BtnRozsNastaveni.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.BtnRozsNastaveni.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnRozsNastaveni.Name = "BtnRozsNastaveni";
+            this.BtnRozsNastaveni.Primary = false;
+            this.BtnRozsNastaveni.Size = new System.Drawing.Size(164, 36);
+            this.BtnRozsNastaveni.TabIndex = 17;
+            this.BtnRozsNastaveni.Text = "Rozšířená nastavení";
+            this.BtnRozsNastaveni.UseVisualStyleBackColor = true;
+            this.BtnRozsNastaveni.Click += new System.EventHandler(this.BtnRozsNastaveni_click);
+            // 
             // UvodServeru
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(470, 470);
+            this.Controls.Add(this.BtnRozsNastaveni);
             this.Controls.Add(this.BtnServerStart);
             this.Controls.Add(this.materialLabel1);
             this.Controls.Add(this.txtServerIP);
@@ -173,5 +191,6 @@
         private MaterialSkin.Controls.MaterialLabel materialLabel2;
         private MaterialSkin.Controls.MaterialLabel materialLabel3;
         private MaterialSkin.Controls.MaterialSingleLineTextField txtServerPort;
+        private MaterialSkin.Controls.MaterialFlatButton BtnRozsNastaveni;
     }
 }

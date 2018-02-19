@@ -12,7 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Users\dvora\Documents\Visual Studio 2017\Projects\SterCore\PataChat\Release\Ver0.2.3\</PublishUrl>
+    <PublishUrl>C:\Users\dvora\Desktop\Server\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -84,6 +84,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RozsNastaveni.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RozsNastaveni.Designer.cs">
+      <DependentUpon>RozsNastaveni.cs</DependentUpon>
+    </Compile>
     <Compile Include="UvodServeru.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -103,6 +109,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="RozsNastaveni.resx">
+      <DependentUpon>RozsNastaveni.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UvodServeru.resx">
       <DependentUpon>UvodServeru.cs</DependentUpon>
     </EmbeddedResource>

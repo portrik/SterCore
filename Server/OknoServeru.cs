@@ -1,86 +1,77 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Collections;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using MaterialSkin;
-using MaterialSkin.Animations;
 using MaterialSkin.Controls;
-using System.Net;
-using System.IO;
-using System.Threading;
-using System.Net.Sockets;
-using System.Collections;
+using SterCore;
 
 namespace SterCore
 {
     public partial class OknoServeru : MaterialForm
     {
+        private Thread BehServeru; //Thread pro běh serveru na pozadí nezávisle na hlavním okně
+
+        private readonly IPEndPoint IPAdresa;
+        private readonly int PocetKlientu; //Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
+        private int PocetPripojeni; //Počet aktuálně připojených uživatelů
+        private TcpListener PrichoziKomunikace; //Poslouchá příchozí komunikaci a žádosti i připojení
+        private readonly Hashtable SeznamKlientu = new Hashtable(); //Seznam připojených uživatelů a jejich adres
+
+        private readonly string Slozka = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "Stercore soubory");
+
+        private bool Stop; //Proměná pro zastavení běhu serveru
+
         public OknoServeru()
         {
             InitializeComponent();
 
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
+            materialSkinManager.Theme = UvodServeru.Tema;
+            materialSkinManager.ColorScheme = UvodServeru.Vzhled;
+
+            PocetKlientu = UvodServeru.PocetPripojeni;
+            IPAdresa = new IPEndPoint(UvodServeru.LokalniAdresa(), UvodServeru.Port);
         }
-
-        public OknoServeru(IPAddress Adresa, int Port, int Pocet)
-        {
-            InitializeComponent();
-
-            IPAdresa = new IPEndPoint(Adresa, Port);
-            PocetKlientu = Pocet;
-
-            var materialSkinManager = MaterialSkinManager.Instance;
-            materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100, Accent.Red400, TextShade.WHITE);
-        }
-
-        IPEndPoint IPAdresa;
-        Hashtable SeznamKlientu = new Hashtable();//Seznam připojených uživatelů a jejich adres
-        int PocetKlientu;//Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
-        int PocetPripojeni = 0;//Počet aktuálně připojených uživatelů
-        bool Stop = false;//Proměná pro zastavení běhu serveru
-        TcpListener PrichoziKomunikace;//Poslouchá příchozí komunikaci a žádosti i připojení
-        Thread BehServeru;//Thread pro běh serveru na pozadí nezávisle na hlavním okně
-        string Slozka = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory");
 
         /// <summary>
-        /// Přijímá připojení klientů. Duplikátní jména jsou odpojena.
+        ///     Přijímá připojení klientů. Duplikátní jména jsou odpojena.
         /// </summary>
         private void PrijmaniKlientu()
-        {           
+        {
             try
             {
                 PrichoziKomunikace.Start();
-                Invoke((MethodInvoker)(() => VypisChatu.Text += DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Server byl spuštěn."));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += DateTime.Now.ToShortTimeString() + " " + "Server byl spuštěn."));
 
                 while (!Stop)
-                {
-                    if(PrichoziKomunikace.Pending() && MaximalniPocet())
+                    if (PrichoziKomunikace.Pending() && MaximalniPocet())
                     {
-                        TcpClient Klient = PrichoziKomunikace.AcceptTcpClient();//Přijme žádost o připojení
+                        var Klient = PrichoziKomunikace.AcceptTcpClient(); //Přijme žádost o připojení
                         ++PocetPripojeni;
-                        byte[] ByteJmeno = new byte[1024 * 1024 * 2];//Bytové pole pro načtení jména
-                        NetworkStream CteniJmena = Klient.GetStream();//Připojení načítání na správný socket
-                        CteniJmena.Read(ByteJmeno, 0, Klient.ReceiveBufferSize);//Načtení sériových dat
-                        string Jmeno = Encoding.Unicode.GetString(ByteJmeno).TrimEnd('\0');//Dekódování dat a vymazání prázdných znaků
+                        var ByteJmeno = new byte[1024 * 1024 * 2]; //Bytové pole pro načtení jména
+                        var CteniJmena = Klient.GetStream(); //Připojení načítání na správný socket
+                        CteniJmena.Read(ByteJmeno, 0, Klient.ReceiveBufferSize); //Načtení sériových dat
+                        var Jmeno = Encoding.Unicode.GetString(ByteJmeno)
+                            .TrimEnd('\0'); //Dekódování dat a vymazání prázdných znaků
 
                         if (KontrolaJmena(Jmeno))
                         {
                             SeznamKlientu.Add(Jmeno, Klient);
-                            Invoke((MethodInvoker)(() => VypisKlientu.Items.Add(Jmeno)));
-                            Vysilani("SERVER", Jmeno + " se připojil(a)"); 
-                            Invoke((MethodInvoker)(() => AktualizaceSeznamu()));
+                            Invoke((MethodInvoker) (() => VypisKlientu.Items.Add(Jmeno)));
+                            Vysilani("SERVER", Jmeno + " se připojil(a)");
+                            Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
 
-                            Thread VlaknoKlienta = new Thread(() => ObsluhaKlienta(Jmeno, Klient))
+                            var VlaknoKlienta = new Thread(() => ObsluhaKlienta(Jmeno, Klient))
                             {
                                 IsBackground = true
                             };
@@ -89,92 +80,94 @@ namespace SterCore
                         }
                         else
                         {
-                            Vysilani("SERVER", Jmeno + " se pokusil(a) připojit. Pokus byl zamítnut - duplikátní jméno");
+                            Vysilani("SERVER",
+                                Jmeno + " se pokusil(a) připojit. Pokus byl zamítnut - duplikátní jméno");
                             CteniJmena.Flush();
                             OdebratKlienta(Klient);
                         }
-                    }                    
-                }
+                    }
             }
-            catch(Exception x)
+            catch (Exception x)
             {
-                if(!Stop)
+                if (!Stop)
                 {
-                    Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba:"));
-                    Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + x.Message));
-                }                
+                    Invoke((MethodInvoker) (() =>
+                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                    Invoke((MethodInvoker) (() =>
+                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+                }
             }
         }
 
         /// <summary>
-        /// Naslouchá příchozím zprávám od klienta.
+        ///     Naslouchá příchozím zprávám od klienta.
         /// </summary>
         /// <param name="jmeno">Jméno klienta</param>
         /// <param name="Pripojeni">Připojení klienta</param>
-        private void ObsluhaKlienta(string jmeno, TcpClient Pripojeni)//Naslouchá příchozím zprávám od klienta
+        private void ObsluhaKlienta(string jmeno, TcpClient Pripojeni) //Naslouchá příchozím zprávám od klienta
         {
-            using (NetworkStream Cteni = Pripojeni.GetStream())//Nastaví naslouchání na správnou adresu
+            using (var Cteni = Pripojeni.GetStream()) //Nastaví naslouchání na správnou adresu
             {
-                byte[] HrubaData;//Pole pro přijímání zpráv
+                byte[] HrubaData; //Pole pro přijímání zpráv
 
                 try
                 {
                     while (!Stop)
                     {
                         HrubaData = new byte[1024 * 1024 * 4];
-                        Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize);//Načtení sériových dat     
+                        Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize); //Načtení sériových dat     
 
-                        byte[] Znacka = new byte[4];
+                        var Znacka = new byte[4];
                         Array.Copy(HrubaData, Znacka, 4); //Zkopíruje první tři bajty z hrubých dat  
-                        string Uprava = Encoding.Unicode.GetString(Znacka);
+                        var Uprava = Encoding.Unicode.GetString(Znacka);
                         string NazevSouboru = null;
 
                         switch (Uprava[0])
                         {
-                            case '0'://Běžná zpráva
-                                {
-                                    string Data = Encoding.Unicode.GetString(HrubaData).TrimEnd('\0');
-                                    string[] Zprava = Data.Split('φ');
-                                    Vysilani(jmeno, Zprava[1]);
-                                    break;
-                                }
-                            case '1'://Obrázek
-                                {
-                                    ZpracovaniSouboru(HrubaData, "Obrazek", out NazevSouboru);
-                                    VysilaniObrazku(HrubaData, jmeno, NazevSouboru);
+                            case '0': //Běžná zpráva
+                            {
+                                var Data = Encoding.Unicode.GetString(HrubaData).TrimEnd('\0');
+                                var Zprava = Data.Split('φ');
+                                Vysilani(jmeno, Zprava[1]);
+                                break;
+                            }
+                            case '1': //Obrázek
+                            {
+                                ZpracovaniSouboru(HrubaData, "Obrazek", out NazevSouboru);
+                                VysilaniObrazku(HrubaData, jmeno, NazevSouboru);
 
-                                   break;
-                                }
-                            case '2'://Soubor
-                                {
-                                    ZpracovaniSouboru(HrubaData, "Soubor", out NazevSouboru);
-                                    VysilaniSouboru(HrubaData, jmeno, NazevSouboru);
+                                break;
+                            }
+                            case '2': //Soubor
+                            {
+                                ZpracovaniSouboru(HrubaData, "Soubor", out NazevSouboru);
+                                VysilaniSouboru(HrubaData, jmeno, NazevSouboru);
 
-                                    break;
-                                }
-                            case '3'://Seznam klientů - server nevyužívá
-                                {
-                                    break;
-                                }
-                            case '4'://Odpojení
-                                {
-                                    OdebratKlienta(jmeno);
-                                    break;
-                                }
+                                break;
+                            }
+                            case '3': //Seznam klientů - server nevyužívá
+                            {
+                                break;
+                            }
+                            case '4': //Odpojení
+                            {
+                                OdebratKlienta(jmeno);
+                                break;
+                            }
                         }
                     }
                 }
-                catch(Exception x)//Při chybě je klient odpojen
+                catch (Exception x) //Při chybě je klient odpojen
                 {
                     MessageBox.Show(x.Message);
                     MessageBox.Show(x.StackTrace);
                     OdebratKlienta(jmeno);
                 }
-            }                
+            }
         }
 
         /// <summary>
-        /// Odešle soubor všem klientům.
+        ///     Odešle soubor všem klientům.
         /// </summary>
         /// <param name="Data">Data souboru</param>
         /// <param name="Tvurce">Odesílatel souboru</param>
@@ -184,8 +177,8 @@ namespace SterCore
             {
                 foreach (DictionaryEntry Klient in SeznamKlientu)
                 {
-                    TcpClient VysilaniSocket = (TcpClient)Klient.Value;
-                    NetworkStream VysilaniProud = VysilaniSocket.GetStream();                   
+                    var VysilaniSocket = (TcpClient) Klient.Value;
+                    var VysilaniProud = VysilaniSocket.GetStream();
                     VysilaniProud.Write(Data, 0, Data.Length);
                     VysilaniProud.Flush();
                 }
@@ -194,8 +187,10 @@ namespace SterCore
             }
             catch (Exception x)
             {
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba:"));
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + x.Message));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
         }
 
@@ -205,8 +200,8 @@ namespace SterCore
             {
                 foreach (DictionaryEntry Klient in SeznamKlientu)
                 {
-                    TcpClient VysilaniSocket = (TcpClient)Klient.Value;
-                    NetworkStream VysilaniProud = VysilaniSocket.GetStream();
+                    var VysilaniSocket = (TcpClient) Klient.Value;
+                    var VysilaniProud = VysilaniSocket.GetStream();
                     VysilaniProud.Write(Data, 0, Data.Length);
                     VysilaniProud.Flush();
                 }
@@ -215,162 +210,152 @@ namespace SterCore
             }
             catch (Exception x)
             {
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba:"));
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + x.Message));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
         }
 
         /// <summary>
-        /// Zjistí, zda zadaný adresář existuje.
+        ///     Zjistí, zda zadaný adresář existuje.
         /// </summary>
         /// <param name="Cesta">Cesta k adresáři</param>
         /// <returns>True - složka existuje, False - složka neexistuje</returns>
         private bool SlozkaSouboru(string Cesta)
         {
-            if (Directory.Exists(Cesta))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return Directory.Exists(Cesta);
         }
 
         /// <summary>
-        /// Uloží přijatý soubor do příslušné složky.
+        ///     Uloží přijatý soubor do příslušné složky.
         /// </summary>
         /// <param name="Data">Přijatá data souboru</param>
         /// <param name="Druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
         private void ZpracovaniSouboru(byte[] Data, string Druh)
         {
-            byte[] Soubor = new byte[1024 * 1024 * 4];
-            byte[] Nazev = new byte[300];
+            var Nazev = new byte[300];
 
             Array.Copy(Data, 0, Nazev, 0, 300);
 
-            string Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
-            string[] NazevSouboru = Prevod.Split('φ');
-            int DelkaSouboru = int.Parse(NazevSouboru[3]);
-            string SlozkaServer = Path.Combine(Slozka, "Klient");
-            string SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+            var Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
+            var NazevSouboru = Prevod.Split('φ');
+            var DelkaSouboru = int.Parse(NazevSouboru[3]);
+            var SlozkaServer = Path.Combine(Slozka, "Server");
+            var SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+            var Soubor = new byte[DelkaSouboru];
 
             Array.Copy(Data, 300, Soubor, 0, DelkaSouboru);
 
-            if (!SlozkaSouboru(Slozka))
-            {
-                Directory.CreateDirectory(Slozka);
-            }
+            if (!SlozkaSouboru(Slozka)) Directory.CreateDirectory(Slozka);
 
-            if (!SlozkaSouboru(SlozkaServer))
-            {
-                Directory.CreateDirectory(SlozkaServer);
-            }
+            if (!SlozkaSouboru(SlozkaServer)) Directory.CreateDirectory(SlozkaServer);
 
-            if (!SlozkaSouboru(SlozkaDruh))
-            {
-                Directory.CreateDirectory(SlozkaDruh);
-            }
+            if (!SlozkaSouboru(SlozkaDruh)) Directory.CreateDirectory(SlozkaDruh);
 
-            string Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
+            var Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
+
+            MessageBox.Show(Cesta);
+            MessageBox.Show(DelkaSouboru.ToString());
+            MessageBox.Show(Data.Length.ToString());
 
             if (File.Exists(Cesta))
             {
-                int Index = 1;
+                var Index = 1;
 
                 while (File.Exists(Cesta))
                 {
-                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + "(" + Index.ToString() + ")" + NazevSouboru[2];
+                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + "(" + Index + ")" +
+                            NazevSouboru[2];
                     ++Index;
                 }
             }
 
-            using (MemoryStream UlozeniSoubour = new MemoryStream(Soubor))
-            {
-                File.WriteAllBytes(Cesta, Soubor);
-            }
+            File.WriteAllBytes(Cesta, Soubor);
         }
 
         private void ZpracovaniSouboru(byte[] Data, string Druh, out string nazevsouboru)
         {
-            byte[] Soubor = new byte[1024 * 1024 * 4];
-            byte[] Nazev = new byte[300];
+            var Hlavicka = new byte[300];
 
-            Array.Copy(Data, 0, Nazev, 0, 300);
+            Array.Copy(Data, 0, Hlavicka, 0, 300);
 
-            string Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
-            string[] NazevSouboru = Prevod.Split('φ');
+            var Prevod = Encoding.Unicode.GetString(Hlavicka).TrimEnd('\0');
+            var NazevSouboru = Prevod.Split('φ');
             nazevsouboru = NazevSouboru[1] + NazevSouboru[2];
-            int DelkaSouboru = int.Parse(NazevSouboru[3]);
-            string SlozkaServer = Path.Combine(Slozka, "Klient");
-            string SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+            var DelkaSouboru = int.Parse(NazevSouboru[3]);
+            var SlozkaServer = Path.Combine(Slozka, "Klient");
+            var SlozkaDruh = Path.Combine(SlozkaServer, Druh);
+            var Soubor = new byte[DelkaSouboru];
+
+            MessageBox.Show(DelkaSouboru.ToString());
+            MessageBox.Show(Prevod.Length.ToString());
 
             Array.Copy(Data, 300, Soubor, 0, DelkaSouboru);
 
-            if (!SlozkaSouboru(Slozka))
-            {
-                Directory.CreateDirectory(Slozka);
-            }
+            if (!SlozkaSouboru(Slozka)) Directory.CreateDirectory(Slozka);
 
-            if (!SlozkaSouboru(SlozkaServer))
-            {
-                Directory.CreateDirectory(SlozkaServer);
-            }
+            if (!SlozkaSouboru(SlozkaServer)) Directory.CreateDirectory(SlozkaServer);
 
-            if (!SlozkaSouboru(SlozkaDruh))
-            {
-                Directory.CreateDirectory(SlozkaDruh);
-            }
+            if (!SlozkaSouboru(SlozkaDruh)) Directory.CreateDirectory(SlozkaDruh);
 
-            string Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
+            var Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
 
             if (File.Exists(Cesta))
             {
-                int Index = 1;
+                var Index = 1;
 
                 while (File.Exists(Cesta))
                 {
-                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + "(" + Index.ToString() + ")" + NazevSouboru[2];
+                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                "Stercore soubory", "Server", Druh) + @"\" + NazevSouboru[1] + "(" + Index + ")" +
+                            NazevSouboru[2];
                     ++Index;
                 }
             }
 
-            using (MemoryStream UlozeniSoubour = new MemoryStream(Soubor))
-            {
-                File.WriteAllBytes(Cesta, Soubor);
-            }
+            File.WriteAllBytes(Cesta, Soubor);
         }
 
         /// <summary>
-        /// Odešle zprávu všem připojeným klientům.
+        ///     Odešle zprávu všem připojeným klientům.
         /// </summary>
         /// <param name="Tvurce">Jméno odesílatele</param>
         /// <param name="Text">Obsah zprávy</param>
-        private void Vysilani(string Tvurce, string Text)//Odeslání zprávy všem klientům
+        private void Vysilani(string Tvurce, string Text) //Odeslání zprávy všem klientům
         {
             try
             {
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + Tvurce + ": " + Text));//Vypíše zprávu na serveru
-                Text = ("0φ" + Tvurce + "φ: " + Text);//Naformátuje zprávu před odesláním                
-                byte[] Data = Encoding.Unicode.GetBytes(Text);//Převede zprávu na byty
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text +=
+                        "\n" + DateTime.Now.ToShortTimeString() + " " + Tvurce + ": " +
+                        Text)); //Vypíše zprávu na serveru
+                Text = "0φ" + Tvurce + "φ: " + Text; //Naformátuje zprávu před odesláním                
+                var Data = Encoding.Unicode.GetBytes(Text); //Převede zprávu na byty
 
                 foreach (DictionaryEntry Klient in SeznamKlientu)
                 {
-                    TcpClient VysilaniSocket = (TcpClient)Klient.Value;//Nastavení adresy k odeslání
-                    NetworkStream VysilaniProud = VysilaniSocket.GetStream();//Nastaví odesílací stream na adresu                        
-                    VysilaniProud.Write(Data, 0, Data.Length);//Odeslání sériových dat
-                    VysilaniProud.Flush();//Ukončení odesílání
+                    var VysilaniSocket = (TcpClient) Klient.Value; //Nastavení adresy k odeslání
+                    var VysilaniProud =
+                        VysilaniSocket.GetStream(); //Nastaví odesílací stream na adresu                        
+                    VysilaniProud.Write(Data, 0, Data.Length); //Odeslání sériových dat
+                    VysilaniProud.Flush(); //Ukončení odesílání
                 }
             }
-            catch(Exception x)
+            catch (Exception x)
             {
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba:"));
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + x.Message));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
         }
 
         /// <summary>
-        /// Odešle všem klientům aktualizovaný seznam všech připojených klientů.
+        ///     Odešle všem klientům aktualizovaný seznam všech připojených klientů.
         /// </summary>
         private void AktualizaceSeznamu()
         {
@@ -378,90 +363,79 @@ namespace SterCore
             {
                 string Jmena = null;
 
-                foreach (DictionaryEntry Klient in SeznamKlientu)
-                {
-                    Jmena += Klient.Key + ",";
-                }
+                foreach (DictionaryEntry Klient in SeznamKlientu) Jmena += Klient.Key + ",";
 
-                string Seznam = ("3φ" + Jmena);//Naformátuje zprávu před odesláním                
-                byte[] Data = Encoding.Unicode.GetBytes(Seznam);//Převede zprávu na byty
+                var Seznam = "3φ" + Jmena; //Naformátuje zprávu před odesláním                
+                var Data = Encoding.Unicode.GetBytes(Seznam); //Převede zprávu na byty
 
                 foreach (DictionaryEntry Klient in SeznamKlientu)
                 {
-                    TcpClient VysilaniSocket = (TcpClient)Klient.Value;//Nastavení adresy k odeslání
-                    NetworkStream VysilaniProud = VysilaniSocket.GetStream();//Nastaví odesílací stream na adresu                        
-                    VysilaniProud.Write(Data, 0, Data.Length);//Odeslání sériových dat
-                    VysilaniProud.Flush();//Ukončení odesílání
+                    var VysilaniSocket = (TcpClient) Klient.Value; //Nastavení adresy k odeslání
+                    var VysilaniProud =
+                        VysilaniSocket.GetStream(); //Nastaví odesílací stream na adresu                        
+                    VysilaniProud.Write(Data, 0, Data.Length); //Odeslání sériových dat
+                    VysilaniProud.Flush(); //Ukončení odesílání
                 }
             }
             catch (Exception x)
             {
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " + "Objevila se chyba:"));
-                Invoke((MethodInvoker)(() => VypisChatu.Text += "\n" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + " " +  x.Message));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                Invoke((MethodInvoker) (() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
         }
 
         /// <summary>
-        /// Ukončí všechna připojení, vypne server a vrtáí se na úvodní form.
+        ///     Ukončí všechna připojení, vypne server a vrtáí se na úvodní form.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void BtnServerStop_Click(object sender, EventArgs e)//Ukončení běhu serveru
+        private void BtnServerStop_Click(object sender, EventArgs e) //Ukončení běhu serveru
         {
-            foreach (DictionaryEntry Klient in SeznamKlientu)
-            {
-                (Klient.Value as TcpClient).Close();
-            }
+            foreach (DictionaryEntry Klient in SeznamKlientu) (Klient.Value as TcpClient).Close();
 
             Stop = true;
             PrichoziKomunikace.Stop();
             UvodServeru.ZmenaUdaju = true;
-            Close();    
+            Close();
         }
 
         /// <summary>
-        /// Zkontroluje, jestli není připojený uživatel se stejným jménem.
+        ///     Zkontroluje, jestli není připojený uživatel se stejným jménem.
         /// </summary>
         /// <param name="Jmeno">Jméno ke kontrole</param>
         /// <returns>Jméno je v pořádku</returns>
-        private bool KontrolaJmena(string Jmeno)//Zkontroluje, zda se jméno již nevyskytuje
+        private bool KontrolaJmena(string Jmeno) //Zkontroluje, zda se jméno již nevyskytuje
         {
-            foreach(DictionaryEntry Klient in SeznamKlientu)
-            {
-                if ((string)Klient.Key == Jmeno)
-                {
+            foreach (DictionaryEntry Klient in SeznamKlientu)
+                if ((string) Klient.Key == Jmeno)
                     return false;
-                }
-            }
 
             return true;
         }
 
         /// <summary>
-        /// Odpojí klienta ze serveru.
+        ///     Odpojí klienta ze serveru.
         /// </summary>
         /// <param name="Jmeno">Jméno klienta</param>
         private void OdebratKlienta(string Jmeno)
         {
             --PocetPripojeni;
 
-            if (InvokeRequired)//Odstraní klienta z výpisu
-            {
-                Invoke((MethodInvoker)(() => VypisKlientu.Items.Remove(Jmeno)));
-            }
+            if (InvokeRequired) //Odstraní klienta z výpisu
+                Invoke((MethodInvoker) (() => VypisKlientu.Items.Remove(Jmeno)));
             else
-            {
                 VypisKlientu.Items.Remove(Jmeno);
-            }
 
-            Invoke((MethodInvoker)(() => SeznamKlientu.Remove(Jmeno)));//Odstraní klienta ze seznamu
+            Invoke((MethodInvoker) (() => SeznamKlientu.Remove(Jmeno))); //Odstraní klienta ze seznamu
             VypisKlientu.Items.Remove(Jmeno);
-            Vysilani("SERVER", Jmeno + " se odpojil(a)");//Ohlasí odpojení ostatním klientům
-            Invoke((MethodInvoker)(() => AktualizaceSeznamu()));
+            Vysilani("SERVER", Jmeno + " se odpojil(a)"); //Ohlasí odpojení ostatním klientům
+            Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
         }
 
         /// <summary>
-        /// Odpojí klienta ze serveru bez zásahu do seznamů.
+        ///     Odpojí klienta ze serveru bez zásahu do seznamů.
         /// </summary>
         /// <param name="Klient">Připojení klienta</param>
         private void OdebratKlienta(TcpClient Klient)
@@ -469,40 +443,36 @@ namespace SterCore
             --PocetPripojeni;
 
             Klient.Close();
-            
         }
 
         /// <summary>
-        /// Odešle zprávu ze serveru.
+        ///     Odešle zprávu ze serveru.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void BtnZprava_Click(object sender, EventArgs e)
         {
-            if(!string.IsNullOrWhiteSpace(TxtZprava.Text))
+            if (!string.IsNullOrWhiteSpace(TxtZprava.Text))
             {
                 Vysilani("Server", TxtZprava.Text);
                 TxtZprava.Text = null;
                 TxtZprava.Focus();
                 TxtZprava.SelectAll();
-            }           
+            }
         }
 
         /// <summary>
-        /// Odeslání zprávy pomocí enteru.
+        ///     Odeslání zprávy pomocí enteru.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void TxtZprava_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if(e.KeyChar == (char)Keys.Enter)
-            {
-                BtnZprava_Click(null, null);
-            }
+            if (e.KeyChar == (char) Keys.Enter) BtnZprava_Click(null, null);
         }
 
         /// <summary>
-        /// Nastaví vzhled okna a spustí server po načtení.
+        ///     Nastaví vzhled okna a spustí server po načtení.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -521,24 +491,19 @@ namespace SterCore
         }
 
         /// <summary>
-        /// Rozhodne, zda nebyl překročen počet připojení, pokud byl nastaven.
-        /// 0 = neomezený počet připojení.
+        ///     Rozhodne, zda nebyl překročen počet připojení, pokud byl nastaven.
+        ///     0 = neomezený počet připojení.
         /// </summary>
         /// <returns>True = je možné přidat další připojení</returns>
         private bool MaximalniPocet()
         {
-            if(PocetKlientu == 0 || PocetPripojeni < PocetKlientu)
-            {
+            if (PocetKlientu == 0 || PocetPripojeni < PocetKlientu)
                 return true;
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
-        /// Při zapsání nové zprávy skočí na poslední zprávu.
+        ///     Při zapsání nové zprávy skočí na poslední zprávu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -549,13 +514,13 @@ namespace SterCore
         }
 
         /// <summary>
-        /// Po kliknutí na odkaz otevře webovou stránku v prohlížeči.
+        ///     Po kliknutí na odkaz otevře webovou stránku v prohlížeči.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">Odkaz webové stránky</param>
         private void VypisChatu_LinkClicked(object sender, LinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start(e.LinkText);
+            Process.Start(e.LinkText);
         }
 
         private void OdeslaniObrazku_Click(object sender, EventArgs e)
@@ -564,16 +529,17 @@ namespace SterCore
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                byte[] Obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
+                var Obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
                 if (Obrazek.Length < 4194004)
-                {
                     try
                     {
-                        string Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + Path.GetExtension(VolbaSouboru.FileName);
-                        string MetaData = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ" + Obrazek.Length.ToString() + "φ";
-                        byte[] Znacka = Encoding.Unicode.GetBytes(MetaData);
-                        byte[] Zprava = new byte[1024 * 1024 * 4];
+                        var Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) +
+                                    Path.GetExtension(VolbaSouboru.FileName);
+                        var MetaData = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
+                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + Obrazek.Length + "φ";
+                        var Znacka = Encoding.Unicode.GetBytes(MetaData);
+                        var Zprava = new byte[1024 * 1024 * 4];
 
                         Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
                         Array.Copy(Obrazek, 0, Zprava, 300, Obrazek.Length);
@@ -587,12 +553,8 @@ namespace SterCore
                         MessageBox.Show(x.StackTrace);
                         MessageBox.Show(x.Message);
                     }
-
-                }
                 else
-                {
                     MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
-                }
             }
         }
 
@@ -602,16 +564,17 @@ namespace SterCore
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                byte[] Soubor = File.ReadAllBytes(VolbaSouboru.FileName);
+                var Soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
                 if (Soubor.Length < 4194004)
-                {
                     try
                     {
-                        string Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + Path.GetExtension(VolbaSouboru.FileName);
-                        string MetaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" + Path.GetExtension(VolbaSouboru.FileName) + "φ" + Soubor.Length.ToString() + "φ";
-                        byte[] Znacka = Encoding.Unicode.GetBytes(MetaData);
-                        byte[] Zprava = new byte[1024 * 1024 * 4];
+                        var Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) +
+                                    Path.GetExtension(VolbaSouboru.FileName);
+                        var MetaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
+                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + Soubor.Length + "φ";
+                        var Znacka = Encoding.Unicode.GetBytes(MetaData);
+                        var Zprava = new byte[1024 * 1024 * 4];
 
                         Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
                         Array.Copy(Soubor, 0, Zprava, 300, Soubor.Length);
@@ -625,12 +588,8 @@ namespace SterCore
                         MessageBox.Show(x.StackTrace);
                         MessageBox.Show(x.Message);
                     }
-
-                }
                 else
-                {
                     MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
-                }
             }
         }
     }

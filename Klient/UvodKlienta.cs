@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
 using System.Windows.Forms;
 using MaterialSkin;
-using MaterialSkin.Animations;
 using MaterialSkin.Controls;
-using System.Net;
 
 namespace SterCore
 {
     public partial class UvodKlienta : MaterialForm
     {
+        public static bool ZmenaUdaju;
+
         public UvodKlienta()
         {
             InitializeComponent();
@@ -23,13 +17,12 @@ namespace SterCore
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900, Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
+                Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
         }
 
-        public static bool ZmenaUdaju;       
-
         /// <summary>
-        /// Zkontroluje údaje a pokusí se připojit na server.
+        ///     Zkontroluje údaje a pokusí se připojit na server.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -37,45 +30,42 @@ namespace SterCore
         {
             ZmenaUdaju = false;
 
-            if (TxtPrezdivka.Text.Length != 0 && TxtPrezdivka.Text.Length <= 30 && !string.IsNullOrWhiteSpace(TxtPrezdivka.Text))
+            if (TxtPrezdivka.Text.Length != 0 && TxtPrezdivka.Text.Length <= 30 &&
+                !string.IsNullOrWhiteSpace(TxtPrezdivka.Text))
             {
                 IPEndPoint AdresaServeru = null;
 
                 try
                 {
-                    IPAddress IP = IPAddress.Parse(TxtIP.Text);
-                    int Port = int.Parse(TxtPort.Text);
-                    AdresaServeru = new IPEndPoint(IP, Port);//Zpracování adresy a portu
-                    OknoKlienta Okno = new OknoKlienta(TxtPrezdivka.Text, AdresaServeru);
+                    var IP = IPAddress.Parse(TxtIP.Text);
+                    var Port = int.Parse(TxtPort.Text);
+                    AdresaServeru = new IPEndPoint(IP, Port); //Zpracování adresy a portu
+                    var Okno = new OknoKlienta(TxtPrezdivka.Text, AdresaServeru);
                     Hide();
                     Okno.ShowDialog();
 
                     if (!ZmenaUdaju)
-                    {
                         Close();
-                    }
                     else
-                    {
                         Show();
-                    }                    
                 }
                 catch
                 {
                     MessageBox.Show("Adresa IP nebo portu byla špatně napsána!", "Chyba!");
                     TxtIP.Focus();
                     TxtIP.SelectAll();
-                }                
+                }
             }
             else
             {
                 MessageBox.Show("Přezdívka se musí skládat ze znaků a nesmí být delší než 30 znaků!", "Chyba!");
                 TxtPrezdivka.Focus();
                 TxtPrezdivka.SelectAll();
-            }            
+            }
         }
 
         /// <summary>
-        /// Nastaví komponenty po načtení formuláře.
+        ///     Nastaví komponenty po načtení formuláře.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -87,7 +77,7 @@ namespace SterCore
         }
 
         /// <summary>
-        /// Podle checkboxu dovolí změnu čísla portu.
+        ///     Podle checkboxu dovolí změnu čísla portu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -106,13 +96,13 @@ namespace SterCore
         }
 
         /// <summary>
-        /// Zjednodušení zadávání údajů.
+        ///     Zjednodušení zadávání údajů.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void TxtPrezdivka_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if(e.KeyChar == (char)Keys.Enter)
+            if (e.KeyChar == (char) Keys.Enter)
             {
                 TxtIP.Focus();
                 TxtIP.SelectAll();
@@ -120,16 +110,13 @@ namespace SterCore
         }
 
         /// <summary>
-        /// Zjednodušení připojení.
+        ///     Zjednodušení připojení.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void TxtIP_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if(e.KeyChar == (char)Keys.Enter)
-            {
-                BtnPripojit_Click(null, null);
-            }
+            if (e.KeyChar == (char) Keys.Enter) BtnPripojit_Click(null, null);
         }
     }
 }
