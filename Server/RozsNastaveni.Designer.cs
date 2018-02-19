@@ -81,7 +81,6 @@
             // RadioSv
             // 
             this.RadioSv.AutoSize = true;
-            this.RadioSv.Checked = true;
             this.RadioSv.Depth = 0;
             this.RadioSv.Font = new System.Drawing.Font("Roboto", 10F);
             this.RadioSv.Location = new System.Drawing.Point(114, 190);
@@ -92,7 +91,6 @@
             this.RadioSv.Ripple = true;
             this.RadioSv.Size = new System.Drawing.Size(66, 30);
             this.RadioSv.TabIndex = 18;
-            this.RadioSv.TabStop = true;
             this.RadioSv.Text = "Světlý";
             this.RadioSv.UseVisualStyleBackColor = true;
             // 
@@ -138,6 +136,7 @@
             this.Controls.Add(this.txtServerPort);
             this.Name = "RozsNastaveni";
             this.Text = "Rozšířená nastavení";
+            this.Load += new System.EventHandler(this.RozsNastaveni_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

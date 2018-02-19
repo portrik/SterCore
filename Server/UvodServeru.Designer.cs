@@ -33,10 +33,9 @@
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
             this.txtServerIP = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.txtPocetKlientu = new MaterialSkin.Controls.MaterialSingleLineTextField();
-            this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
-            this.txtServerPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.BtnRozsNastaveni = new MaterialSkin.Controls.MaterialFlatButton();
+            this.ChckUlozitNast = new MaterialSkin.Controls.MaterialCheckBox();
             this.SuspendLayout();
             // 
             // BtnServerStart
@@ -85,7 +84,7 @@
             // 
             this.txtPocetKlientu.Depth = 0;
             this.txtPocetKlientu.Hint = "";
-            this.txtPocetKlientu.Location = new System.Drawing.Point(94, 274);
+            this.txtPocetKlientu.Location = new System.Drawing.Point(94, 214);
             this.txtPocetKlientu.MouseState = MaterialSkin.MouseState.HOVER;
             this.txtPocetKlientu.Name = "txtPocetKlientu";
             this.txtPocetKlientu.PasswordChar = '\0';
@@ -98,55 +97,25 @@
             this.txtPocetKlientu.UseSystemPasswordChar = false;
             this.txtPocetKlientu.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
             // 
-            // materialLabel2
-            // 
-            this.materialLabel2.AutoSize = true;
-            this.materialLabel2.Depth = 0;
-            this.materialLabel2.Font = new System.Drawing.Font("Roboto", 11F);
-            this.materialLabel2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel2.Location = new System.Drawing.Point(90, 188);
-            this.materialLabel2.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialLabel2.Name = "materialLabel2";
-            this.materialLabel2.Size = new System.Drawing.Size(94, 19);
-            this.materialLabel2.TabIndex = 12;
-            this.materialLabel2.Text = "Port serveru:";
-            // 
             // materialLabel3
             // 
             this.materialLabel3.AutoSize = true;
             this.materialLabel3.Depth = 0;
             this.materialLabel3.Font = new System.Drawing.Font("Roboto", 11F);
             this.materialLabel3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel3.Location = new System.Drawing.Point(90, 252);
+            this.materialLabel3.Location = new System.Drawing.Point(90, 192);
             this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel3.Name = "materialLabel3";
             this.materialLabel3.Size = new System.Drawing.Size(173, 19);
             this.materialLabel3.TabIndex = 14;
             this.materialLabel3.Text = "Maximální počet klientů:";
             // 
-            // txtServerPort
-            // 
-            this.txtServerPort.Depth = 0;
-            this.txtServerPort.Hint = "";
-            this.txtServerPort.Location = new System.Drawing.Point(94, 210);
-            this.txtServerPort.MouseState = MaterialSkin.MouseState.HOVER;
-            this.txtServerPort.Name = "txtServerPort";
-            this.txtServerPort.PasswordChar = '\0';
-            this.txtServerPort.SelectedText = "";
-            this.txtServerPort.SelectionLength = 0;
-            this.txtServerPort.SelectionStart = 0;
-            this.txtServerPort.Size = new System.Drawing.Size(191, 23);
-            this.txtServerPort.TabIndex = 13;
-            this.txtServerPort.Text = "8888";
-            this.txtServerPort.UseSystemPasswordChar = false;
-            this.txtServerPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
-            // 
             // BtnRozsNastaveni
             // 
             this.BtnRozsNastaveni.AutoSize = true;
             this.BtnRozsNastaveni.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BtnRozsNastaveni.Depth = 0;
-            this.BtnRozsNastaveni.Location = new System.Drawing.Point(94, 306);
+            this.BtnRozsNastaveni.Location = new System.Drawing.Point(94, 301);
             this.BtnRozsNastaveni.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.BtnRozsNastaveni.MouseState = MaterialSkin.MouseState.HOVER;
             this.BtnRozsNastaveni.Name = "BtnRozsNastaveni";
@@ -157,19 +126,36 @@
             this.BtnRozsNastaveni.UseVisualStyleBackColor = true;
             this.BtnRozsNastaveni.Click += new System.EventHandler(this.BtnRozsNastaveni_click);
             // 
+            // ChckUlozitNast
+            // 
+            this.ChckUlozitNast.AutoSize = true;
+            this.ChckUlozitNast.Checked = true;
+            this.ChckUlozitNast.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ChckUlozitNast.Depth = 0;
+            this.ChckUlozitNast.Font = new System.Drawing.Font("Roboto", 10F);
+            this.ChckUlozitNast.Location = new System.Drawing.Point(94, 254);
+            this.ChckUlozitNast.Margin = new System.Windows.Forms.Padding(0);
+            this.ChckUlozitNast.MouseLocation = new System.Drawing.Point(-1, -1);
+            this.ChckUlozitNast.MouseState = MaterialSkin.MouseState.HOVER;
+            this.ChckUlozitNast.Name = "ChckUlozitNast";
+            this.ChckUlozitNast.Ripple = true;
+            this.ChckUlozitNast.Size = new System.Drawing.Size(174, 30);
+            this.ChckUlozitNast.TabIndex = 22;
+            this.ChckUlozitNast.Text = "Pamatovat si nastavení";
+            this.ChckUlozitNast.UseVisualStyleBackColor = true;
+            // 
             // UvodServeru
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(470, 470);
+            this.Controls.Add(this.ChckUlozitNast);
             this.Controls.Add(this.BtnRozsNastaveni);
             this.Controls.Add(this.BtnServerStart);
             this.Controls.Add(this.materialLabel1);
             this.Controls.Add(this.txtServerIP);
             this.Controls.Add(this.txtPocetKlientu);
-            this.Controls.Add(this.materialLabel2);
             this.Controls.Add(this.materialLabel3);
-            this.Controls.Add(this.txtServerPort);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(470, 470);
             this.MinimumSize = new System.Drawing.Size(470, 470);
@@ -188,9 +174,8 @@
         private MaterialSkin.Controls.MaterialLabel materialLabel1;
         private MaterialSkin.Controls.MaterialSingleLineTextField txtServerIP;
         private MaterialSkin.Controls.MaterialSingleLineTextField txtPocetKlientu;
-        private MaterialSkin.Controls.MaterialLabel materialLabel2;
         private MaterialSkin.Controls.MaterialLabel materialLabel3;
-        private MaterialSkin.Controls.MaterialSingleLineTextField txtServerPort;
         private MaterialSkin.Controls.MaterialFlatButton BtnRozsNastaveni;
+        private MaterialSkin.Controls.MaterialCheckBox ChckUlozitNast;
     }
 }

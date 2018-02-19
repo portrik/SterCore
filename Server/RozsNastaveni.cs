@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using MaterialSkin;
 using MaterialSkin.Controls;
 using SterCore;
@@ -12,29 +14,51 @@ namespace PataChat
             InitializeComponent();
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100,
-                Accent.Red400, TextShade.WHITE);
+            materialSkinManager.Theme = UvodServeru.Tema;
+            materialSkinManager.ColorScheme = UvodServeru.Vzhled;
+
+            if (UvodServeru.Tema == MaterialSkinManager.Themes.LIGHT)
+            {
+                RadioSv.Checked = true;
+            }
+            else
+            {
+                RadioTm.Checked = true;
+            }
         }
 
         private void BtnPotvrdit_Click(object sender, EventArgs e)
         {
-            UvodServeru.Port = int.Parse(txtServerPort.Text);
-
-            if (RadioSv.Checked)
+            try
             {
-                UvodServeru.Tema = MaterialSkinManager.Themes.LIGHT;
-                UvodServeru.Vzhled = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100, Accent.Red400,
-                    TextShade.WHITE);
-            }
-            else if (RadioTm.Checked)
-            {
-                UvodServeru.Tema = MaterialSkinManager.Themes.DARK;
-                UvodServeru.Vzhled = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100, Accent.Red400,
-                    TextShade.WHITE);
-            }
+                UvodServeru.Port = int.Parse(txtServerPort.Text);
 
-            Close();
+                if (RadioSv.Checked)
+                {
+                    UvodServeru.Tema = MaterialSkinManager.Themes.LIGHT;
+                    UvodServeru.Vzhled = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100, Accent.Red400,
+                        TextShade.WHITE);
+                }
+                else if (RadioTm.Checked)
+                {
+                    UvodServeru.Tema = MaterialSkinManager.Themes.DARK;
+                    UvodServeru.Vzhled = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100, Accent.Red400,
+                        TextShade.WHITE);
+                }
+
+                Close();
+            }
+            catch
+            {
+                MessageBox.Show("Byla zadána neplatná hodnota portu!", "Chyba!");
+                txtServerPort.Focus();
+                txtServerPort.SelectAll();
+            }
+        }
+
+        private void RozsNastaveni_Load(object sender, EventArgs e)
+        {
+            txtServerPort.Text = UvodServeru.Port.ToString();
         }
     }
 }

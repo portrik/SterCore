@@ -478,11 +478,26 @@ namespace SterCore
         /// <param name="e"></param>
         private void OknoServeru_Load(object sender, EventArgs e)
         {
-            VypisChatu.BackColor = Color.White;
+            //VypisChatu.BackColor = Color.
             Stop = false;
             PrichoziKomunikace = new TcpListener(IPAdresa);
 
-            BehServeru = new Thread(PrijmaniKlientu)
+            if (UvodServeru.Tema == MaterialSkinManager.Themes.LIGHT)
+            {
+                VypisChatu.BackColor = Color.White;
+                VypisChatu.ForeColor = Color.Black;
+                VypisKlientu.BackColor = Color.White;
+                VypisKlientu.ForeColor = Color.Black;
+            }
+            else
+            {
+                VypisChatu.BackColor = ColorTranslator.FromHtml("#333333");
+                VypisChatu.ForeColor = Color.White;
+                VypisKlientu.BackColor = ColorTranslator.FromHtml("#333333");
+                VypisKlientu.ForeColor = Color.White;
+            }
+
+        BehServeru = new Thread(PrijmaniKlientu)
             {
                 IsBackground = true
             };

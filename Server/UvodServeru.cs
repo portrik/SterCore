@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
@@ -25,7 +26,17 @@ namespace SterCore
             InitializeComponent();
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+
+            if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server") + "\\Nastaveni.txt"))
+            {
+                NacistNastaveni();
+                materialSkinManager.Theme = Tema;
+            }
+            else
+            {
+                materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            }
+
             materialSkinManager.ColorScheme = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100,
                 Accent.Red400, TextShade.WHITE);
         }
@@ -42,8 +53,12 @@ namespace SterCore
             try
             {
                 AdresaServeru = IPAddress.Parse(txtServerIP.Text);
-                Port = int.Parse(txtServerPort.Text); //Zadá hodnotu proměné z textboxu
                 PocetPripojeni = int.Parse(txtPocetKlientu.Text); //Načte maximální počet klientů
+
+                if(ChckUlozitNast.Checked)
+                {
+                    UlozeniNastaveni();
+                }
 
                 var Okno = new OknoServeru();
                 Hide();
@@ -68,9 +83,17 @@ namespace SterCore
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void UvodServeru_Load(object sender, EventArgs e)
-        {
-            AdresaServeru = LokalniAdresa();
-            txtServerIP.Text = AdresaServeru.ToString(); //Nastaví lokální adresu do textboxu
+        { 
+            if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server") + "\\Nastaveni.txt"))
+            {
+                txtServerIP.Text = AdresaServeru.ToString(); //Nastaví lokální adresu do textboxu
+                txtPocetKlientu.Text = PocetPripojeni.ToString();
+            }
+            else
+            {
+                AdresaServeru = LokalniAdresa();
+            }
+
             txtServerIP.Focus();
             txtServerIP.SelectAll();
         }
@@ -91,8 +114,6 @@ namespace SterCore
 
             Okno.ShowDialog();
 
-            txtServerPort.Text = Port.ToString();
-
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = Tema;
@@ -111,6 +132,41 @@ namespace SterCore
                     return IP;
 
             return IPAddress.Parse("127.0.0.1"); //Pokud není počítač připojen k síti, vrátí loopback adresu
+        }
+
+        private void UlozeniNastaveni()
+        {
+            using (StreamWriter Zapis = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server") + "\\Nastaveni.txt"))
+            {
+                Zapis.WriteLine("IP Adresa:" + AdresaServeru);
+                Zapis.WriteLine("Port:" + Port);
+                Zapis.WriteLine("Téma:" + Tema);
+                Zapis.WriteLine("Počet klientů:" + PocetPripojeni);
+            }
+        }
+
+        private void NacistNastaveni()
+        {
+            using (StreamReader Cteni = new StreamReader(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"Stercore soubory", "Server") + "\\Nastaveni.txt"))
+            {
+                string[] Radek = Cteni.ReadLine().Split(':');
+                AdresaServeru = IPAddress.Parse(Radek[1]);
+                Radek = Cteni.ReadLine().Split(':');
+                Port = int.Parse(Radek[1]);
+                Radek = Cteni.ReadLine().Split(':');
+
+                if (Radek[1] == "LIGHT")
+                {
+                    Tema = MaterialSkinManager.Themes.LIGHT;
+                }
+                else
+                {
+                    Tema = MaterialSkinManager.Themes.DARK;
+                }
+
+                Radek = Cteni.ReadLine().Split(':');
+                PocetPripojeni = int.Parse(Radek[1]);
+            }
         }
     }
 }
