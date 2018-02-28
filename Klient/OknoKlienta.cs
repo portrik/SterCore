@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -10,39 +11,31 @@ using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
 
-namespace SterCore
+namespace Klient
 {
     public partial class OknoKlienta : MaterialForm
     {
-        private readonly IPEndPoint Adresa;
-        private readonly string Prezdivka;
+        private readonly IPEndPoint _adresa;
+        private readonly string _prezdivka;
 
-        private readonly string Slozka = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+        private readonly string _slozka = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "Stercore soubory");
 
-        private TcpClient Komunikace;
-        private NetworkStream Prijem, Odesilani = default(NetworkStream);
-        private Thread Prijmani;
+        private TcpClient _komunikace;
+        private NetworkStream _prijem, _odesilani = default(NetworkStream);
+        private Thread _prijmani;
 
         public OknoKlienta()
         {
             InitializeComponent();
-        }
-
-        public OknoKlienta(string Jmeno, IPEndPoint AdresaServeru)
-        {
-            InitializeComponent();
-
-            Prezdivka = Jmeno;
-            Adresa = AdresaServeru;
 
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
-                Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+            materialSkinManager.Theme = UvodKlienta.Tema;
+            materialSkinManager.ColorScheme = UvodKlienta.Vzhled;
 
-            Pripojeni();
+            _prezdivka = UvodKlienta.Prezdivka;
+            _adresa = new IPEndPoint(UvodKlienta.AdresaServeru, UvodKlienta.Port);
         }
 
         /// <summary>
@@ -50,32 +43,32 @@ namespace SterCore
         /// </summary>
         public void Pripojeni()
         {
-            Komunikace = new TcpClient();
+            _komunikace = new TcpClient();
 
             try
             {
-                Komunikace.Connect(Adresa); //Pokus o připojení na zadanou adresu a port
+                _komunikace.Connect(_adresa); //Pokus o připojení na zadanou adresu a port
 
-                if (Komunikace.Connected)
+                if (_komunikace.Connected)
                 {
-                    Odesilani = Komunikace.GetStream(); //Nastavení proudu na adresu
-                    VypisChatu.Text += DateTime.Now.ToShortTimeString() + " " + "Připojení bylo úspěšné!";
-                    var Jmeno = Encoding.Unicode.GetBytes(Prezdivka); //Převedení přezdívky na byty
-                    Odesilani.Write(Jmeno, 0, Jmeno.Length); //Odeslání přezdívky
-                    Odesilani.Flush(); //Vyprázdnění proudu
+                    _odesilani = _komunikace.GetStream(); //Nastavení proudu na adresu
+                    VypisChatu.Text += DateTime.Now.ToShortTimeString() + " Připojení bylo úspěšné!";
+                    var Jmeno = Encoding.Unicode.GetBytes(_prezdivka); //Převedení přezdívky na byty
+                    _odesilani.Write(Jmeno, 0, Jmeno.Length); //Odeslání přezdívky
+                    _odesilani.Flush(); //Vyprázdnění proudu
 
-                    Prijmani = new Thread(PrijmaniZprav)
+                    _prijmani = new Thread(PrijmaniZprav)
                     {
                         IsBackground = true
                     }; //Nastaví thread pro přijímání zpráv a nastaví jej do pozadí
 
-                    Prijmani.Start(); //Zapnutí poslouchání zpráv
+                    _prijmani.Start(); //Zapnutí poslouchání zpráv
                 }
             }
-            catch (Exception x)
+            catch
             {
-                VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba: ";
-                VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message;
+                UvodKlienta.ZmenaUdaju = true;
+                Close();
             }
         }
 
@@ -86,49 +79,49 @@ namespace SterCore
         {
             try
             {
-                using (Prijem = Komunikace.GetStream())
+                using (_prijem = _komunikace.GetStream())
                 {
-                    while (Komunikace.Connected)
+                    while (_komunikace.Connected)
                     {
-                        var Data = new byte[1024 * 1024 * 4]; //Pole pro příjem sériových dat
-                        var Znak = new byte[3];
+                        var data = new byte[1024 * 1024 * 4]; //Pole pro příjem sériových dat
+                        var znak = new byte[3];
 
-                        Prijem.Read(Data, 0, Komunikace.ReceiveBufferSize); //Načtení sériových dat
+                        _prijem.Read(data, 0, _komunikace.ReceiveBufferSize); //Načtení sériových dat
 
-                        Array.Copy(Data, Znak, 3);
+                        Array.Copy(data, znak, 3);
 
-                        var Uprava = Encoding.Unicode.GetString(Znak);
+                        var uprava = Encoding.Unicode.GetString(znak);
 
-                        switch (Uprava[0])
+                        switch (uprava[0])
                         {
                             case '0': //Běžná zpráva
                             {
-                                var Dekodovani = Encoding.Unicode.GetString(Data).TrimEnd('\0');
-                                var Zprava = Dekodovani.Split('φ');
-                                Vypsani(Zprava[1] + Zprava[2]);
+                                var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
+                                var zprava = dekodovani.Split('φ');
+                                Vypsani(zprava[1] + zprava[2]);
                                 break;
                             }
                             case '1': //TODO: Zpracování obrázku
                             {
-                                ZpracovaniSouboru(Data, "Obrazek");
+                                ZpracovaniSouboru(data, "Obrazek");
 
                                 break;
                             }
                             case '2': //TODO: Zpracování souboru
                             {
-                                ZpracovaniSouboru(Data, "Soubor");
+                                ZpracovaniSouboru(data, "Soubor");
 
                                 break;
                             }
                             case '3': //TODO: Seznam klientů
                             {
-                                var Dekodovani = Encoding.Unicode.GetString(Data).TrimEnd('\0');
-                                var Seznam = Dekodovani.Split('φ');
-                                var Jmena = Seznam[1].Split(',');
+                                var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
+                                var seznam = dekodovani.Split('φ');
+                                var jmena = seznam[1].Split(',');
 
-                                foreach (var Jmeno in Jmena)
+                                foreach (var jmeno in jmena)
                                     if (InvokeRequired)
-                                        Invoke((MethodInvoker) (() => LstPripojeni.Items.Add(Jmeno)));
+                                        Invoke((MethodInvoker) (() => LstPripojeni.Items.Add(jmeno)));
 
                                 break;
                             }
@@ -136,90 +129,81 @@ namespace SterCore
                     }
                 }
             }
-            catch (Exception x)
+            catch
             {
-                MessageBox.Show(x.Message);
-                MessageBox.Show(x.StackTrace);
-                Vypsani("Spojení bylo ukončeno");
-                UvodKlienta.ZmenaUdaju = true;
+                MessageBox.Show("Server ukončil spojení.", "Konec spojení");
 
+                UvodKlienta.ZmenaUdaju = true;
                 if (InvokeRequired) Invoke((MethodInvoker) (() => Close()));
 
-                Prijmani.Join();
+                _prijmani.Join();
             }
         }
 
         /// <summary>
         ///     Vypíše přijatou zprávu do okna chatu.
         /// </summary>
-        /// <param name="Text">Přijatá zpráva</param>
-        private void Vypsani(string Text)
+        /// <param name="zprava">Přijatá zpráva</param>
+        private void Vypsani(string zprava)
         {
             if (InvokeRequired)
-                Invoke((MethodInvoker) (() => Vypsani(Text)));
+                Invoke((MethodInvoker) (() => Vypsani(zprava)));
             else
-                VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + Text;
+                VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + zprava;
         }
 
         /// <summary>
         ///     Zjistí, zda zadaný adresář existuje.
         /// </summary>
-        /// <param name="Cesta">Cesta k adresáři</param>
+        /// <param name="cesta">Cesta k adresáři</param>
         /// <returns>True - složka existuje, False - složka neexistuje</returns>
-        private bool SlozkaSouboru(string Cesta)
+        private bool SlozkaSouboru(string cesta)
         {
-            return Directory.Exists(Cesta);
+            return Directory.Exists(cesta);
         }
 
         /// <summary>
         ///     Uloží přijatý soubor do příslušné složky.
         /// </summary>
-        /// <param name="Data">Přijatá data souboru</param>
-        /// <param name="Druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
-        private void ZpracovaniSouboru(byte[] Data, string Druh)
+        /// <param name="data">Přijatá data souboru</param>
+        /// <param name="druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
+        private void ZpracovaniSouboru(byte[] data, string druh)
         {
-            var Nazev = new byte[300];
+            byte[] metaData = new byte[128];
+            Array.Copy(data, 0, metaData, 0, 128);
+            string[] split = Encoding.Unicode.GetString(metaData).Split('φ');
+            int delkaSouboru = Convert.ToInt32(split[2]);
+            byte[] obrazek = new byte[delkaSouboru];
 
-            Array.Copy(Data, 0, Nazev, 0, 300);
+            var slozkaServer = Path.Combine(_slozka, "Klient");
+            var slozkaDruh = Path.Combine(slozkaServer, druh);
 
-            var Prevod = Encoding.Unicode.GetString(Nazev).TrimEnd('\0');
-            var NazevSouboru = Prevod.Split('φ');
-            var DelkaSouboru = int.Parse(NazevSouboru[3]);
-            var SlozkaServer = Path.Combine(Slozka, "Klient");
-            var SlozkaDruh = Path.Combine(SlozkaServer, Druh);
-            var Soubor = new byte[DelkaSouboru];
+            if (!SlozkaSouboru(_slozka)) Directory.CreateDirectory(_slozka);
 
-            Array.Copy(Data, 300, Soubor, 0, DelkaSouboru);
+            if (!SlozkaSouboru(slozkaServer)) Directory.CreateDirectory(slozkaServer);
 
-            if (!SlozkaSouboru(Slozka)) Directory.CreateDirectory(Slozka);
+            if (!SlozkaSouboru(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
 
-            if (!SlozkaSouboru(SlozkaServer)) Directory.CreateDirectory(SlozkaServer);
-
-            if (!SlozkaSouboru(SlozkaDruh)) Directory.CreateDirectory(SlozkaDruh);
-
-            var Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                            "Stercore soubory", "Klient", Druh) + @"\" + NazevSouboru[1] + NazevSouboru[2];
-
-            MessageBox.Show(Cesta);
-            MessageBox.Show(DelkaSouboru.ToString());
-            MessageBox.Show(Data.Length.ToString());
-
-            if (File.Exists(Cesta))
+            if (split[1] == "0")
             {
-                var Index = 1;
+                Array.Copy(data, 128, obrazek, 0, delkaSouboru);
+                var cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                "Stercore soubory", "Klient", druh) + @"\" + split[3] + split[4].Trim('\0');
 
-                while (File.Exists(Cesta))
+                if (File.Exists(cesta))
                 {
-                    Cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                                "Stercore soubory", "Klient", Druh) + @"\" + NazevSouboru[1] + "(" + Index + ")" +
-                            NazevSouboru[2];
-                    ++Index;
-                }
-            }
+                    var index = 1;
 
-            using (var UlozeniSoubour = new MemoryStream(Soubor))
-            {
-                File.WriteAllBytes(Cesta, Soubor);
+                    while (File.Exists(cesta))
+                    {
+                        cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                    "Stercore soubory", "Klient", druh) + @"\" + split[3] + "(" + index + ")" +
+                                split[4].Trim('\0');
+                        ++index;
+                    }
+                }
+
+                File.WriteAllBytes(cesta, obrazek);
             }
         }
 
@@ -230,9 +214,9 @@ namespace SterCore
         /// <param name="e"></param>
         private void BtnOdpojit_Click(object sender, EventArgs e)
         {
-            var Zprava = Encoding.Unicode.GetBytes("4φ"); //Převedení zprávy na sériová data
-            Odesilani.Write(Zprava, 0, Zprava.Length); //Odeslání sériových dat
-            Odesilani.Flush(); //Vyprázdnění proudu
+            var zprava = Encoding.Unicode.GetBytes("4φ"); //Převedení zprávy na sériová data
+            _odesilani.Write(zprava, 0, zprava.Length); //Odeslání sériových dat
+            _odesilani.Flush(); //Vyprázdnění proudu
 
             UvodKlienta.ZmenaUdaju = true;
             Close();
@@ -247,9 +231,9 @@ namespace SterCore
         {
             if (!string.IsNullOrWhiteSpace(TxtZprava.Text))
             {
-                var Zprava = Encoding.Unicode.GetBytes("0φ" + TxtZprava.Text.Trim()); //Převedení zprávy na sériová data
-                Odesilani.Write(Zprava, 0, Zprava.Length); //Odeslání sériových dat
-                Odesilani.Flush(); //Vyprázdnění proudu
+                var zprava = Encoding.Unicode.GetBytes("0φ" + TxtZprava.Text.Trim()); //Převedení zprávy na sériová data
+                _odesilani.Write(zprava, 0, zprava.Length); //Odeslání sériových dat
+                _odesilani.Flush(); //Vyprázdnění proudu
 
                 TxtZprava.Text = null; //Vyprázdnění textového pole
                 TxtZprava.Focus();
@@ -273,22 +257,20 @@ namespace SterCore
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                var Obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
+                var obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (Obrazek.Length < 4194004)
+                if (obrazek.Length < 4194004)
                     try
                     {
-                        var Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) +
-                                    Path.GetExtension(VolbaSouboru.FileName);
-                        var MetaData = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
-                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + Obrazek.Length + "φ";
-                        var Znacka = Encoding.Unicode.GetBytes(MetaData);
-                        var Zprava = new byte[1024 * 1024 * 4];
+                        var metaData = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
+                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + obrazek.Length + "φ";
+                        var znacka = Encoding.Unicode.GetBytes(metaData);
+                        var zprava = new byte[1024 * 1024 * 4];
 
-                        Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
-                        Array.Copy(Obrazek, 0, Zprava, 300, Obrazek.Length);
+                        Array.Copy(znacka, 0, zprava, 0, znacka.Length);
+                        Array.Copy(obrazek, 0, zprava, 300, obrazek.Length);
 
-                        VyslaniSouboru(Zprava);
+                        VyslaniSouboru(zprava);
                     }
                     catch (Exception x)
                     {
@@ -323,7 +305,22 @@ namespace SterCore
 
         private void OknoKlienta_Load(object sender, EventArgs e)
         {
-            VypisChatu.BackColor = Color.White;
+            if (UvodKlienta.Tema == MaterialSkinManager.Themes.LIGHT)
+            {
+                VypisChatu.BackColor = Color.White;
+                VypisChatu.ForeColor = Color.Black;
+                LstPripojeni.BackColor = Color.White;
+                LstPripojeni.ForeColor = Color.Black;
+            }
+            else
+            {
+                VypisChatu.BackColor = ColorTranslator.FromHtml("#333333");
+                VypisChatu.ForeColor = Color.White;
+                LstPripojeni.BackColor = ColorTranslator.FromHtml("#333333");
+                LstPripojeni.ForeColor = Color.White;
+            }
+
+            Pripojeni();
         }
 
         private void OdeslatSoubor_Click(object sender, EventArgs e)
@@ -334,21 +331,21 @@ namespace SterCore
 
                 if (VolbaSouboru.ShowDialog() == DialogResult.OK)
                 {
-                    var Soubor = File.ReadAllBytes(VolbaSouboru.FileName);
+                    var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                    if (Soubor.Length < 4194004)
+                    if (soubor.Length < 4194004)
                         try
                         {
-                            var MetaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
-                                           Path.GetExtension(VolbaSouboru.FileName) + "φ" + Soubor.Length + "φ";
-                            var Znacka = Encoding.Unicode.GetBytes(MetaData);
-                            var Zprava = new byte[1024 * 1024 * 4];
-                            MessageBox.Show(Soubor.Length.ToString());
+                            var metaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
+                                           Path.GetExtension(VolbaSouboru.FileName) + "φ" + soubor.Length + "φ";
+                            var znacka = Encoding.Unicode.GetBytes(metaData);
+                            var zprava = new byte[1024 * 1024 * 4];
+                            MessageBox.Show(soubor.Length.ToString());
 
-                            Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
-                            Array.Copy(Soubor, 0, Zprava, 300, Soubor.Length);
+                            Array.Copy(znacka, 0, zprava, 0, znacka.Length);
+                            Array.Copy(soubor, 0, zprava, 300, soubor.Length);
 
-                            VyslaniSouboru(Zprava);
+                            VyslaniSouboru(zprava);
                         }
                         catch (Exception x)
                         {
@@ -361,18 +358,18 @@ namespace SterCore
             }
         }
 
-        private void VyslaniSouboru(byte[] Data)
+        private void VyslaniSouboru(byte[] data)
         {
             try
             {
-                Odesilani.Write(Data, 0, Data.Length);
-                Odesilani.Flush();
+                _odesilani.Write(data, 0, data.Length);
+                _odesilani.Flush();
             }
             catch (Exception x)
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " +
-                                       "Objevila se chyba:"));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() +
+                                       " Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }

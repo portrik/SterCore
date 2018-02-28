@@ -1,4 +1,4 @@
-﻿namespace SterCore
+﻿namespace Klient
 {
     partial class OknoKlienta
     {

@@ -3,9 +3,9 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using MaterialSkin;
 using MaterialSkin.Controls;
-using SterCore;
+using Server;
 
-namespace PataChat
+namespace Server
 {
     public partial class RozsNastaveni : MaterialForm
     {

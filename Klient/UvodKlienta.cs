@@ -1,14 +1,23 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Windows.Forms;
+using Klient;
 using MaterialSkin;
 using MaterialSkin.Controls;
 
-namespace SterCore
+namespace Klient
 {
     public partial class UvodKlienta : MaterialForm
     {
+        public static ColorScheme Vzhled = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
+            Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+        public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT;
+
+        public static IPAddress AdresaServeru = null;
+        public static int Port = 8888;
         public static bool ZmenaUdaju;
+        public static string Prezdivka;
 
         public UvodKlienta()
         {
@@ -16,9 +25,18 @@ namespace SterCore
 
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
-                Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+
+            if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            {
+                NacistNastaveni();
+                materialSkinManager.Theme = Tema;
+            }
+            else
+            {
+                materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            }
+
+            materialSkinManager.ColorScheme = Vzhled;
         }
 
         /// <summary>
@@ -28,19 +46,20 @@ namespace SterCore
         /// <param name="e"></param>
         private void BtnPripojit_Click(object sender, EventArgs e)
         {
-            ZmenaUdaju = false;
-
             if (TxtPrezdivka.Text.Length != 0 && TxtPrezdivka.Text.Length <= 30 &&
                 !string.IsNullOrWhiteSpace(TxtPrezdivka.Text))
             {
-                IPEndPoint AdresaServeru = null;
-
                 try
                 {
-                    var IP = IPAddress.Parse(TxtIP.Text);
-                    var Port = int.Parse(TxtPort.Text);
-                    AdresaServeru = new IPEndPoint(IP, Port); //Zpracování adresy a portu
-                    var Okno = new OknoKlienta(TxtPrezdivka.Text, AdresaServeru);
+                    AdresaServeru = IPAddress.Parse(TxtIP.Text);
+                    Prezdivka = TxtPrezdivka.Text;
+
+                    if (ChckUlozitNast.Checked)
+                    {
+                        UlozeniNastaveni();
+                    }
+
+                    var Okno = new OknoKlienta();
                     Hide();
                     Okno.ShowDialog();
 
@@ -71,28 +90,14 @@ namespace SterCore
         /// <param name="e"></param>
         private void KlientUvod_Load(object sender, EventArgs e)
         {
+            if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            {
+                TxtPrezdivka.Text = Prezdivka;
+                TxtIP.Text = AdresaServeru.ToString();
+            }
+
             TxtPrezdivka.Focus();
             TxtPrezdivka.SelectAll();
-            TxtPort.Enabled = false;
-        }
-
-        /// <summary>
-        ///     Podle checkboxu dovolí změnu čísla portu.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CheckPort_CheckedChanged(object sender, EventArgs e)
-        {
-            if (CheckPort.Checked)
-            {
-                TxtPort.Enabled = true;
-                TxtPort.TabStop = true;
-            }
-            else
-            {
-                TxtPort.Enabled = false;
-                TxtPort.TabStop = false;
-            }
         }
 
         /// <summary>
@@ -117,6 +122,53 @@ namespace SterCore
         private void TxtIP_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char) Keys.Enter) BtnPripojit_Click(null, null);
+        }
+
+        private void UlozeniNastaveni()
+        {
+            using (StreamWriter Zapis = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            {
+                Zapis.WriteLine("IP Adresa: " + AdresaServeru);
+                Zapis.WriteLine("Port: " + Port);
+                Zapis.WriteLine("Téma: " + Tema);
+                Zapis.WriteLine("Přezdívka: " + Prezdivka);
+            }
+        }
+
+        private void NacistNastaveni()
+        {
+            using (StreamReader Cteni = new StreamReader(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            {
+                string[] Radek = Cteni.ReadLine().Split(':');
+                AdresaServeru = IPAddress.Parse(Radek[1].Trim());
+                Radek = Cteni.ReadLine().Split(':');
+                Port = int.Parse(Radek[1].Trim());
+                Radek = Cteni.ReadLine().Split(':');
+
+                if (Radek[1].Trim() == "LIGHT")
+                {
+                    Tema = MaterialSkinManager.Themes.LIGHT;
+                }
+                else
+                {
+                    Tema = MaterialSkinManager.Themes.DARK;
+                }
+
+                Radek = Cteni.ReadLine().Split(':');
+                Prezdivka = Radek[1].Trim();
+            }
+        }
+
+        private void BtnRozsNastaveni_Click(object sender, EventArgs e)
+        {
+            var Okno = new RozsNastaveni();
+
+            Okno.ShowDialog();
+
+            var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.AddFormToManage(this);
+            materialSkinManager.Theme = Tema;
+            materialSkinManager.ColorScheme = Vzhled;
         }
     }
 }

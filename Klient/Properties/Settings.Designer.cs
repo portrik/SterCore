@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SterCore.Properties
+namespace Server.Properties
 {
 
 

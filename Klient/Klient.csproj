@@ -76,6 +76,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RozsNastaveni.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RozsNastaveni.Designer.cs">
+      <DependentUpon>RozsNastaveni.cs</DependentUpon>
+    </Compile>
     <Compile Include="UvodKlienta.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,6 +96,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="RozsNastaveni.resx">
+      <DependentUpon>RozsNastaveni.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UvodKlienta.resx">
       <DependentUpon>UvodKlienta.cs</DependentUpon>
     </EmbeddedResource>

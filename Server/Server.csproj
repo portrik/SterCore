@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{276B5A11-99A5-456C-A095-BCD5D59E67D0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>PataChat</RootNamespace>
-    <AssemblyName>PataChat</AssemblyName>
+    <RootNamespace>Server</RootNamespace>
+    <AssemblyName>Server</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -146,6 +146,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\SouborServeru.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ObrazekServeru1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SouborServeru1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

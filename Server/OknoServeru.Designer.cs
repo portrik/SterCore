@@ -1,4 +1,4 @@
-﻿namespace SterCore
+﻿namespace Server
 {
     partial class OknoServeru
     {
@@ -107,7 +107,7 @@
             // OdeslaniObrazku
             // 
             this.OdeslaniObrazku.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.OdeslaniObrazku.Image = global::PataChat.Properties.Resources.ObrazekServeru;
+            this.OdeslaniObrazku.Image = global::Server.Properties.Resources.ObrazekServeru;
             this.OdeslaniObrazku.Location = new System.Drawing.Point(92, 566);
             this.OdeslaniObrazku.Name = "OdeslaniObrazku";
             this.OdeslaniObrazku.Size = new System.Drawing.Size(48, 48);
@@ -119,7 +119,7 @@
             // OdeslaniSouboru
             // 
             this.OdeslaniSouboru.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.OdeslaniSouboru.Image = global::PataChat.Properties.Resources.SouborServeru;
+            this.OdeslaniSouboru.Image = global::Server.Properties.Resources.SouborServeru;
             this.OdeslaniSouboru.Location = new System.Drawing.Point(23, 566);
             this.OdeslaniSouboru.Name = "OdeslaniSouboru";
             this.OdeslaniSouboru.Size = new System.Drawing.Size(48, 48);

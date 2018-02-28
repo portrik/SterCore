@@ -5,21 +5,18 @@ using System.Net.Sockets;
 using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
-using PataChat;
 
-namespace SterCore
+namespace Server
 {
     public partial class UvodServeru : MaterialForm
     {
         public static int Port = 8888, PocetPripojeni;
         public static bool ZmenaUdaju;
+        private IPAddress AdresaServeru;
 
         public static ColorScheme Vzhled = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100,
             Accent.Red400, TextShade.WHITE);
-
         public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT;
-
-        private IPAddress AdresaServeru;
 
         public UvodServeru()
         {
@@ -37,8 +34,7 @@ namespace SterCore
                 materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
             }
 
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100,
-                Accent.Red400, TextShade.WHITE);
+            materialSkinManager.ColorScheme = Vzhled;
         }
 
         /// <summary>
@@ -138,10 +134,10 @@ namespace SterCore
         {
             using (StreamWriter Zapis = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Server") + "\\Nastaveni.txt"))
             {
-                Zapis.WriteLine("IP Adresa:" + AdresaServeru);
-                Zapis.WriteLine("Port:" + Port);
-                Zapis.WriteLine("Téma:" + Tema);
-                Zapis.WriteLine("Počet klientů:" + PocetPripojeni);
+                Zapis.WriteLine("IP Adresa: " + AdresaServeru);
+                Zapis.WriteLine("Port: " + Port);
+                Zapis.WriteLine("Téma: " + Tema);
+                Zapis.WriteLine("Počet klientů: " + PocetPripojeni);
             }
         }
 
@@ -150,12 +146,12 @@ namespace SterCore
             using (StreamReader Cteni = new StreamReader(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"Stercore soubory", "Server") + "\\Nastaveni.txt"))
             {
                 string[] Radek = Cteni.ReadLine().Split(':');
-                AdresaServeru = IPAddress.Parse(Radek[1]);
+                AdresaServeru = IPAddress.Parse(Radek[1].Trim());
                 Radek = Cteni.ReadLine().Split(':');
-                Port = int.Parse(Radek[1]);
+                Port = int.Parse(Radek[1].Trim());
                 Radek = Cteni.ReadLine().Split(':');
 
-                if (Radek[1] == "LIGHT")
+                if (Radek[1].Trim() == "LIGHT")
                 {
                     Tema = MaterialSkinManager.Themes.LIGHT;
                 }
@@ -165,7 +161,7 @@ namespace SterCore
                 }
 
                 Radek = Cteni.ReadLine().Split(':');
-                PocetPripojeni = int.Parse(Radek[1]);
+                PocetPripojeni = int.Parse(Radek[1].Trim());
             }
         }
     }

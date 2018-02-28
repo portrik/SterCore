@@ -1,4 +1,4 @@
-﻿namespace PataChat
+﻿namespace Server
 {
     partial class RozsNastaveni
     {
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RozsNastaveni));
             this.materialLabel2 = new MaterialSkin.Controls.MaterialLabel();
             this.txtServerPort = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.BtnPotvrdit = new MaterialSkin.Controls.MaterialRaisedButton();
@@ -42,7 +43,7 @@
             this.materialLabel2.Depth = 0;
             this.materialLabel2.Font = new System.Drawing.Font("Roboto", 11F);
             this.materialLabel2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel2.Location = new System.Drawing.Point(101, 82);
+            this.materialLabel2.Location = new System.Drawing.Point(37, 88);
             this.materialLabel2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel2.Name = "materialLabel2";
             this.materialLabel2.Size = new System.Drawing.Size(94, 19);
@@ -53,14 +54,14 @@
             // 
             this.txtServerPort.Depth = 0;
             this.txtServerPort.Hint = "";
-            this.txtServerPort.Location = new System.Drawing.Point(105, 104);
+            this.txtServerPort.Location = new System.Drawing.Point(40, 110);
             this.txtServerPort.MouseState = MaterialSkin.MouseState.HOVER;
             this.txtServerPort.Name = "txtServerPort";
             this.txtServerPort.PasswordChar = '\0';
             this.txtServerPort.SelectedText = "";
             this.txtServerPort.SelectionLength = 0;
             this.txtServerPort.SelectionStart = 0;
-            this.txtServerPort.Size = new System.Drawing.Size(191, 23);
+            this.txtServerPort.Size = new System.Drawing.Size(90, 23);
             this.txtServerPort.TabIndex = 15;
             this.txtServerPort.Text = "8888";
             this.txtServerPort.UseSystemPasswordChar = false;
@@ -68,7 +69,7 @@
             // BtnPotvrdit
             // 
             this.BtnPotvrdit.Depth = 0;
-            this.BtnPotvrdit.Location = new System.Drawing.Point(137, 365);
+            this.BtnPotvrdit.Location = new System.Drawing.Point(228, 318);
             this.BtnPotvrdit.MouseState = MaterialSkin.MouseState.HOVER;
             this.BtnPotvrdit.Name = "BtnPotvrdit";
             this.BtnPotvrdit.Primary = true;
@@ -83,7 +84,7 @@
             this.RadioSv.AutoSize = true;
             this.RadioSv.Depth = 0;
             this.RadioSv.Font = new System.Drawing.Font("Roboto", 10F);
-            this.RadioSv.Location = new System.Drawing.Point(114, 190);
+            this.RadioSv.Location = new System.Drawing.Point(41, 179);
             this.RadioSv.Margin = new System.Windows.Forms.Padding(0);
             this.RadioSv.MouseLocation = new System.Drawing.Point(-1, -1);
             this.RadioSv.MouseState = MaterialSkin.MouseState.HOVER;
@@ -99,7 +100,7 @@
             this.RadioTm.AutoSize = true;
             this.RadioTm.Depth = 0;
             this.RadioTm.Font = new System.Drawing.Font("Roboto", 10F);
-            this.RadioTm.Location = new System.Drawing.Point(114, 230);
+            this.RadioTm.Location = new System.Drawing.Point(41, 218);
             this.RadioTm.Margin = new System.Windows.Forms.Padding(0);
             this.RadioTm.MouseLocation = new System.Drawing.Point(-1, -1);
             this.RadioTm.MouseState = MaterialSkin.MouseState.HOVER;
@@ -116,7 +117,7 @@
             this.materialLabel1.Depth = 0;
             this.materialLabel1.Font = new System.Drawing.Font("Roboto", 11F);
             this.materialLabel1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialLabel1.Location = new System.Drawing.Point(101, 150);
+            this.materialLabel1.Location = new System.Drawing.Point(37, 150);
             this.materialLabel1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialLabel1.Name = "materialLabel1";
             this.materialLabel1.Size = new System.Drawing.Size(54, 19);
@@ -127,14 +128,17 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(470, 470);
+            this.ClientSize = new System.Drawing.Size(380, 380);
             this.Controls.Add(this.materialLabel1);
             this.Controls.Add(this.RadioTm);
             this.Controls.Add(this.RadioSv);
             this.Controls.Add(this.BtnPotvrdit);
             this.Controls.Add(this.materialLabel2);
             this.Controls.Add(this.txtServerPort);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "RozsNastaveni";
+            this.Sizable = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Rozšířená nastavení";
             this.Load += new System.EventHandler(this.RozsNastaveni_Load);
             this.ResumeLayout(false);
