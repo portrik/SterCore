@@ -24,7 +24,10 @@ namespace Klient
         private TcpClient _komunikace;
         private NetworkStream _prijem, _odesilani = default(NetworkStream);
         private Thread _prijmani;
-
+        private byte[] _obrazek;
+        private bool _prijemObrazku;
+        private int _pozice;
+ 
         public OknoKlienta()
         {
             InitializeComponent();
@@ -44,6 +47,7 @@ namespace Klient
         public void Pripojeni()
         {
             _komunikace = new TcpClient();
+            bool pripojeno = false;
 
             try
             {
@@ -57,6 +61,8 @@ namespace Klient
                     _odesilani.Write(Jmeno, 0, Jmeno.Length); //Odeslání přezdívky
                     _odesilani.Flush(); //Vyprázdnění proudu
 
+                    pripojeno = true;
+
                     _prijmani = new Thread(PrijmaniZprav)
                     {
                         IsBackground = true
@@ -67,6 +73,10 @@ namespace Klient
             }
             catch
             {
+                if (!pripojeno)
+                {
+                    MessageBox.Show("K zadanému serveru se nepodařilo připojit.", "Chyba");
+                }
                 UvodKlienta.ZmenaUdaju = true;
                 Close();
             }
@@ -172,23 +182,38 @@ namespace Klient
             byte[] metaData = new byte[128];
             Array.Copy(data, 0, metaData, 0, 128);
             string[] split = Encoding.Unicode.GetString(metaData).Split('φ');
-            int delkaSouboru = Convert.ToInt32(split[2]);
-            byte[] obrazek = new byte[delkaSouboru];
+            var velikostDat = Convert.ToInt32(split[2]);
+            var delkaSouboru = Convert.ToInt32(split[3]);
 
-            var slozkaServer = Path.Combine(_slozka, "Klient");
-            var slozkaDruh = Path.Combine(slozkaServer, druh);
-
-            if (!SlozkaSouboru(_slozka)) Directory.CreateDirectory(_slozka);
-
-            if (!SlozkaSouboru(slozkaServer)) Directory.CreateDirectory(slozkaServer);
-
-            if (!SlozkaSouboru(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
-
-            if (split[1] == "0")
+            if (Convert.ToInt32(split[1]) >= 0)
             {
-                Array.Copy(data, 128, obrazek, 0, delkaSouboru);
+                if (!_prijemObrazku)
+                {
+                    _obrazek = new byte[delkaSouboru];
+                    Array.Copy(data, 128, _obrazek, 0, velikostDat - 128);
+                    _prijemObrazku = true;
+                    _pozice += velikostDat;
+                }
+                else
+                {
+                    Array.Copy(data, 128, _obrazek, _pozice, velikostDat - 128);
+                    _pozice += velikostDat;
+                }
+            }
+            else
+            {
+                var slozkaServer = Path.Combine(_slozka, "Klient");
+                var slozkaDruh = Path.Combine(slozkaServer, druh);
+
+                if (!SlozkaSouboru(_slozka)) Directory.CreateDirectory(_slozka);
+
+                if (!SlozkaSouboru(slozkaServer)) Directory.CreateDirectory(slozkaServer);
+
+                if (!SlozkaSouboru(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
+
+
                 var cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                                "Stercore soubory", "Klient", druh) + @"\" + split[3] + split[4].Trim('\0');
+                                "Stercore soubory", "Klient", druh) + @"\" + split[4] + split[5].Trim('\0');
 
                 if (File.Exists(cesta))
                 {
@@ -197,13 +222,16 @@ namespace Klient
                     while (File.Exists(cesta))
                     {
                         cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                                    "Stercore soubory", "Klient", druh) + @"\" + split[3] + "(" + index + ")" +
-                                split[4].Trim('\0');
+                                    "Stercore soubory", "Klient", druh) + @"\" + split[4] + "(" + index + ")" +
+                                split[5].Trim('\0');
                         ++index;
                     }
                 }
 
-                File.WriteAllBytes(cesta, obrazek);
+                File.WriteAllBytes(cesta, _obrazek);
+                _obrazek = null;
+                _prijemObrazku = false;
+                _pozice = 0;
             }
         }
 
@@ -320,6 +348,8 @@ namespace Klient
                 LstPripojeni.ForeColor = Color.White;
             }
 
+            _prijemObrazku = false;
+            _pozice = 0;
             Pripojeni();
         }
 

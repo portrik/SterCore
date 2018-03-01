@@ -10,7 +10,6 @@ using System.Threading;
 using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
-using Server;
 
 namespace Server
 {
@@ -56,34 +55,34 @@ namespace Server
                 while (!_stop)
                     if (_prichoziKomunikace.Pending() && MaximalniPocet())
                     {
-                        var Klient = _prichoziKomunikace.AcceptTcpClient(); //Přijme žádost o připojení
+                        var klient = _prichoziKomunikace.AcceptTcpClient(); //Přijme žádost o připojení
                         ++_pocetPripojeni;
-                        var ByteJmeno = new byte[1024 * 1024 * 2]; //Bytové pole pro načtení jména
-                        var CteniJmena = Klient.GetStream(); //Připojení načítání na správný socket
-                        CteniJmena.Read(ByteJmeno, 0, Klient.ReceiveBufferSize); //Načtení sériových dat
-                        var Jmeno = Encoding.Unicode.GetString(ByteJmeno)
+                        var byteJmeno = new byte[1024 * 1024 * 2]; //Bytové pole pro načtení jména
+                        var cteniJmena = klient.GetStream(); //Připojení načítání na správný socket
+                        cteniJmena.Read(byteJmeno, 0, klient.ReceiveBufferSize); //Načtení sériových dat
+                        var jmeno = Encoding.Unicode.GetString(byteJmeno)
                             .TrimEnd('\0'); //Dekódování dat a vymazání prázdných znaků
 
-                        if (KontrolaJmena(Jmeno))
+                        if (KontrolaJmena(jmeno))
                         {
-                            _seznamKlientu.Add(Jmeno, Klient);
-                            Invoke((MethodInvoker) (() => VypisKlientu.Items.Add(Jmeno)));
-                            Vysilani("SERVER", Jmeno + " se připojil(a)");
+                            _seznamKlientu.Add(jmeno, klient);
+                            Invoke((MethodInvoker) (() => VypisKlientu.Items.Add(jmeno)));
+                            Vysilani("SERVER", jmeno + " se připojil(a)");
                             Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
 
-                            var VlaknoKlienta = new Thread(() => ObsluhaKlienta(Jmeno, Klient))
+                            var vlaknoKlienta = new Thread(() => ObsluhaKlienta(jmeno, klient))
                             {
                                 IsBackground = true
                             };
 
-                            VlaknoKlienta.Start();
+                            vlaknoKlienta.Start();
                         }
                         else
                         {
                             Vysilani("SERVER",
-                                Jmeno + " se pokusil(a) připojit. Pokus byl zamítnut - duplikátní jméno");
-                            CteniJmena.Flush();
-                            OdebratKlienta(Klient);
+                                jmeno + " se pokusil(a) připojit. Pokus byl zamítnut - duplikátní jméno");
+                            cteniJmena.Flush();
+                            OdebratKlienta(klient);
                         }
                     }
             }
@@ -92,7 +91,7 @@ namespace Server
                 if (!_stop)
                 {
                     Invoke((MethodInvoker) (() =>
-                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + "Objevila se chyba:"));
                     Invoke((MethodInvoker) (() =>
                         VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
                 }
@@ -103,46 +102,38 @@ namespace Server
         ///     Naslouchá příchozím zprávám od klienta.
         /// </summary>
         /// <param name="jmeno">Jméno klienta</param>
-        /// <param name="Pripojeni">Připojení klienta</param>
-        private void ObsluhaKlienta(string jmeno, TcpClient Pripojeni) //Naslouchá příchozím zprávám od klienta
+        /// <param name="pripojeni">Připojení klienta</param>
+        private void ObsluhaKlienta(string jmeno, TcpClient pripojeni) //Naslouchá příchozím zprávám od klienta
         {
-            using (var Cteni = Pripojeni.GetStream()) //Nastaví naslouchání na správnou adresu
+            using (var cteni = pripojeni.GetStream()) //Nastaví naslouchání na správnou adresu
             {
-                byte[] HrubaData; //Pole pro přijímání zpráv
-
                 try
                 {
                     while (!_stop)
                     {
-                        HrubaData = new byte[1024 * 1024 * 4];
-                        Cteni.Read(HrubaData, 0, Pripojeni.ReceiveBufferSize); //Načtení sériových dat     
+                        byte[] hrubaData = new byte[1024 * 1024 * 4];
+                        cteni.Read(hrubaData, 0, pripojeni.ReceiveBufferSize); //Načtení sériových dat     
 
-                        var Znacka = new byte[4];
-                        Array.Copy(HrubaData, Znacka, 4); //Zkopíruje první tři bajty z hrubých dat  
-                        var Uprava = Encoding.Unicode.GetString(Znacka);
-                        string NazevSouboru = null;
+                        var znacka = new byte[4];
+                        Array.Copy(hrubaData, znacka, 4); //Zkopíruje první tři bajty z hrubých dat  
+                        var uprava = Encoding.Unicode.GetString(znacka);
 
-                        switch (Uprava[0])
+                        switch (uprava[0])
                         {
                             case '0': //Běžná zpráva
                             {
-                                var Data = Encoding.Unicode.GetString(HrubaData).TrimEnd('\0');
-                                var Zprava = Data.Split('φ');
-                                Vysilani(jmeno, Zprava[1]);
+                                var data = Encoding.Unicode.GetString(hrubaData).TrimEnd('\0');
+                                var zprava = data.Split('φ');
+                                Vysilani(jmeno, zprava[1]);
                                 break;
                             }
-                            case '1': //Obrázek
+                            case '1': //TODO: Obrázek
                             {
                                 
-                                VysilaniObrazku(HrubaData, jmeno, NazevSouboru);
-
                                 break;
                             }
-                            case '2': //Soubor
+                            case '2': //TODO: Soubor
                             {
-                                
-                                VysilaniSouboru(HrubaData, jmeno, NazevSouboru);
-
                                 break;
                             }
                             case '3': //Seznam klientů - server nevyužívá
@@ -159,7 +150,10 @@ namespace Server
                 }
                 catch
                 {
-                    OdebratKlienta(jmeno);
+                    if (!_stop)
+                    {
+                        OdebratKlienta(jmeno);
+                    }
                 }
             }
         }
@@ -167,49 +161,50 @@ namespace Server
         /// <summary>
         ///     Odešle soubor všem klientům.
         /// </summary>
-        /// <param name="Data">Data souboru</param>
-        /// <param name="Tvurce">Odesílatel souboru</param>
-        private void VysilaniObrazku(byte[] Data, string Tvurce, string Nazev)
+        /// <param name="data">Data souboru</param>
+        /// <param name="tvurce">Odesílatel souboru</param>
+        /// <param name="nazev"></param>
+        private void VysilaniObrazku(byte[] data, string tvurce, string nazev)
         {
             try
             {
                 foreach (DictionaryEntry Klient in _seznamKlientu)
                 {
-                    var VysilaniSocket = (TcpClient) Klient.Value;
-                    var VysilaniProud = VysilaniSocket.GetStream();
-                    VysilaniProud.Write(Data, 0, Data.Length);
-                    VysilaniProud.Flush();
+                    var vysilaniSocket = (TcpClient) Klient.Value;
+                    var vysilaniProud = vysilaniSocket.GetStream();
+                    vysilaniProud.Write(data, 0, data.Length);
+                    vysilaniProud.Flush();
                 }
 
-                Vysilani(Tvurce, "Poslal obrázek (" + Nazev + ")");
+                Vysilani(tvurce, "Poslal obrázek (" + nazev + ")");
             }
             catch (Exception x)
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() +  "Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
         }
 
-        private void VysilaniSouboru(byte[] Data, string Tvurce, string Nazev)
+        private void VysilaniSouboru(byte[] data, string tvurce, string nazev)
         {
             try
             {
-                foreach (DictionaryEntry Klient in _seznamKlientu)
+                foreach (DictionaryEntry klient in _seznamKlientu)
                 {
-                    var VysilaniSocket = (TcpClient) Klient.Value;
-                    var VysilaniProud = VysilaniSocket.GetStream();
-                    VysilaniProud.Write(Data, 0, Data.Length);
-                    VysilaniProud.Flush();
+                    var vysilaniSocket = (TcpClient) klient.Value;
+                    var vysilaniProud = vysilaniSocket.GetStream();
+                    vysilaniProud.Write(data, 0, data.Length);
+                    vysilaniProud.Flush();
                 }
 
-                Vysilani(Tvurce, "Poslal soubor (" + Nazev + ")");
+                Vysilani(tvurce, "Poslal soubor (" + nazev + ")");
             }
             catch (Exception x)
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
@@ -218,42 +213,42 @@ namespace Server
         /// <summary>
         ///     Zjistí, zda zadaný adresář existuje.
         /// </summary>
-        /// <param name="Cesta">Cesta k adresáři</param>
+        /// <param name="cesta">Cesta k adresáři</param>
         /// <returns>True - složka existuje, False - složka neexistuje</returns>
-        private bool SlozkaSouboru(string Cesta)
+        private static bool SlozkaSouboru(string cesta)
         {
-            return Directory.Exists(Cesta);
+            return Directory.Exists(cesta);
         }
 
         /// <summary>
         ///     Odešle zprávu všem připojeným klientům.
         /// </summary>
-        /// <param name="Tvurce">Jméno odesílatele</param>
-        /// <param name="Text">Obsah zprávy</param>
-        private void Vysilani(string Tvurce, string Text) //Odeslání zprávy všem klientům
+        /// <param name="tvurce">Jméno odesílatele</param>
+        /// <param name="text">Obsah zprávy</param>
+        private void Vysilani(string tvurce, string text) //Odeslání zprávy všem klientům
         {
             try
             {
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text +=
-                        "\n" + DateTime.Now.ToShortTimeString() + " " + Tvurce + ": " +
-                        Text)); //Vypíše zprávu na serveru
-                Text = "0φ" + Tvurce + "φ: " + Text; //Naformátuje zprávu před odesláním                
-                var Data = Encoding.Unicode.GetBytes(Text); //Převede zprávu na byty
+                        "\n" + DateTime.Now.ToShortTimeString() + " " + tvurce + ": " +
+                        text)); //Vypíše zprávu na serveru
+                text = "0φ" + tvurce + "φ: " + text; //Naformátuje zprávu před odesláním                
+                var data = Encoding.Unicode.GetBytes(text); //Převede zprávu na byty
 
                 foreach (DictionaryEntry Klient in _seznamKlientu)
                 {
-                    var VysilaniSocket = (TcpClient) Klient.Value; //Nastavení adresy k odeslání
-                    var VysilaniProud =
-                        VysilaniSocket.GetStream(); //Nastaví odesílací stream na adresu                        
-                    VysilaniProud.Write(Data, 0, Data.Length); //Odeslání sériových dat
-                    VysilaniProud.Flush(); //Ukončení odesílání
+                    var vysilaniSocket = (TcpClient) Klient.Value; //Nastavení adresy k odeslání
+                    var vysilaniProud =
+                        vysilaniSocket.GetStream(); //Nastaví odesílací stream na adresu                        
+                    vysilaniProud.Write(data, 0, data.Length); //Odeslání sériových dat
+                    vysilaniProud.Flush(); //Ukončení odesílání
                 }
             }
             catch (Exception x)
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
@@ -266,26 +261,26 @@ namespace Server
         {
             try
             {
-                string Jmena = null;
+                string jmena = null;
 
-                foreach (DictionaryEntry Klient in _seznamKlientu) Jmena += Klient.Key + ",";
+                foreach (DictionaryEntry klient in _seznamKlientu) jmena += klient.Key + ",";
 
-                var Seznam = "3φ" + Jmena; //Naformátuje zprávu před odesláním                
-                var Data = Encoding.Unicode.GetBytes(Seznam); //Převede zprávu na byty
+                var seznam = "3φ" + jmena; //Naformátuje zprávu před odesláním                
+                var data = Encoding.Unicode.GetBytes(seznam); //Převede zprávu na byty
 
-                foreach (DictionaryEntry Klient in _seznamKlientu)
+                foreach (DictionaryEntry klient in _seznamKlientu)
                 {
-                    var VysilaniSocket = (TcpClient) Klient.Value; //Nastavení adresy k odeslání
-                    var VysilaniProud =
-                        VysilaniSocket.GetStream(); //Nastaví odesílací stream na adresu                        
-                    VysilaniProud.Write(Data, 0, Data.Length); //Odeslání sériových dat
-                    VysilaniProud.Flush(); //Ukončení odesílání
+                    var vysilaniSocket = (TcpClient) klient.Value; //Nastavení adresy k odeslání
+                    var vysilaniProud =
+                        vysilaniSocket.GetStream(); //Nastaví odesílací stream na adresu                        
+                    vysilaniProud.Write(data, 0, data.Length); //Odeslání sériových dat
+                    vysilaniProud.Flush(); //Ukončení odesílání
                 }
             }
             catch (Exception x)
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + "Objevila se chyba:"));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
@@ -298,9 +293,12 @@ namespace Server
         /// <param name="e"></param>
         private void BtnServerStop_Click(object sender, EventArgs e) //Ukončení běhu serveru
         {
-            foreach (DictionaryEntry Klient in _seznamKlientu) OdebratKlienta(Klient.Key as string);
-            _stop = true;
+            foreach (DictionaryEntry klient in _seznamKlientu)
+            {
+                OdebratKlienta(klient.Value as TcpClient);
+            }
             _prichoziKomunikace.Stop();
+            _stop = true;
             UvodServeru.ZmenaUdaju = true;
             Close();
         }
@@ -308,12 +306,12 @@ namespace Server
         /// <summary>
         ///     Zkontroluje, jestli není připojený uživatel se stejným jménem.
         /// </summary>
-        /// <param name="Jmeno">Jméno ke kontrole</param>
+        /// <param name="jmeno">Jméno ke kontrole</param>
         /// <returns>Jméno je v pořádku</returns>
-        private bool KontrolaJmena(string Jmeno) //Zkontroluje, zda se jméno již nevyskytuje
+        private bool KontrolaJmena(string jmeno) //Zkontroluje, zda se jméno již nevyskytuje
         {
-            foreach (DictionaryEntry Klient in _seznamKlientu)
-                if ((string) Klient.Key == Jmeno)
+            foreach (DictionaryEntry klient in _seznamKlientu)
+                if ((string) klient.Key == jmeno)
                     return false;
 
             return true;
@@ -322,31 +320,31 @@ namespace Server
         /// <summary>
         ///     Odpojí klienta ze serveru.
         /// </summary>
-        /// <param name="Jmeno">Jméno klienta</param>
-        private void OdebratKlienta(string Jmeno)
+        /// <param name="jmeno">Jméno klienta</param>
+        private void OdebratKlienta(string jmeno)
         {
             --_pocetPripojeni;
 
             if (InvokeRequired) //Odstraní klienta z výpisu
-                Invoke((MethodInvoker) (() => VypisKlientu.Items.Remove(Jmeno)));
+                Invoke((MethodInvoker) (() => VypisKlientu.Items.Remove(jmeno)));
             else
-                VypisKlientu.Items.Remove(Jmeno);
+                VypisKlientu.Items.Remove(jmeno);
 
-            Invoke((MethodInvoker) (() => _seznamKlientu.Remove(Jmeno))); //Odstraní klienta ze seznamu
-            VypisKlientu.Items.Remove(Jmeno);
-            Vysilani("SERVER", Jmeno + " se odpojil(a)"); //Ohlasí odpojení ostatním klientům
+            Invoke((MethodInvoker) (() => _seznamKlientu.Remove(jmeno))); //Odstraní klienta ze seznamu
+            VypisKlientu.Items.Remove(jmeno);
+            Vysilani("SERVER", jmeno + " se odpojil(a)"); //Ohlasí odpojení ostatním klientům
             Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
         }
 
         /// <summary>
         ///     Odpojí klienta ze serveru bez zásahu do seznamů.
         /// </summary>
-        /// <param name="Klient">Připojení klienta</param>
-        private void OdebratKlienta(TcpClient Klient)
+        /// <param name="klient">Připojení klienta</param>
+        private void OdebratKlienta(TcpClient klient)
         {
             --_pocetPripojeni;
 
-            Klient.Close();
+            klient.Close();
         }
 
         /// <summary>
@@ -471,20 +469,20 @@ namespace Server
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                var Soubor = File.ReadAllBytes(VolbaSouboru.FileName);
+                var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (Soubor.Length < 4194004)
+                if (soubor.Length < 4194004)
                     try
                     {
-                        var Nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) +
+                        var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) +
                                     Path.GetExtension(VolbaSouboru.FileName);
-                        var MetaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
-                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + Soubor.Length + "φ";
-                        var Znacka = Encoding.Unicode.GetBytes(MetaData);
-                        var Zprava = new byte[1024 * 1024 * 4];
+                        var metaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
+                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + soubor.Length + "φ";
+                        var znacka = Encoding.Unicode.GetBytes(metaData);
+                        var zprava = new byte[1024 * 1024 * 4];
 
-                        Array.Copy(Znacka, 0, Zprava, 0, Znacka.Length);
-                        Array.Copy(Soubor, 0, Zprava, 300, Soubor.Length);
+                        Array.Copy(znacka, 0, zprava, 0, znacka.Length);
+                        Array.Copy(soubor, 0, zprava, 300, soubor.Length);
 
                        
 
@@ -504,28 +502,52 @@ namespace Server
         {
             UlozitObrazek(data, nazev, pripona);
 
-            if (data.Length > 1024 * 1024 * 4)
-            {
+            var pozicePuvodni = 0;
+            var pocet = 0;
 
-            }
-            else
+            byte[] odesilanaData = new byte[65536];
+
+            while (pozicePuvodni < data.Length)
             {
-                var metaData = Encoding.Unicode.GetBytes("1φ" + "0φ" + data.Length + "φ" + nazev + "φ" + pripona);
-                byte[] odesilanaData = new byte[128 + data.Length];
+                byte[] metaData;
                 
-                Array.Copy(metaData, odesilanaData, metaData.Length);
-                Array.Copy(data, 0, odesilanaData, 128, data.Length);
+                if (data.Length - pozicePuvodni > 65408)
+                {
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + 65408 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    Array.Copy(data, pozicePuvodni, odesilanaData, 128, 65408);
+                    pozicePuvodni += 65408;
+                }
+                else
+                {
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozicePuvodni) + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    Array.Copy(data, pozicePuvodni, odesilanaData, 128, data.Length - pozicePuvodni);
+                    pozicePuvodni += data.Length - pozicePuvodni;
+                }
+
+                Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
 
                 foreach (DictionaryEntry klient in _seznamKlientu)
                 {
-                    var vysilaniSocket = (TcpClient)klient.Value; 
+                    var vysilaniSocket = (TcpClient)klient.Value;
                     var vysilaniProud = vysilaniSocket.GetStream();
                     vysilaniProud.Write(odesilanaData, 0, odesilanaData.Length);
                     vysilaniProud.Flush();
                 }
 
-                Vysilani(odesilatel, "Poslal obrázek " + nazev + pripona);
+                ++pocet;
             }
+
+            odesilanaData = Encoding.Unicode.GetBytes("1φ" + -1 + "φ" + 0 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+
+            foreach (DictionaryEntry klient in _seznamKlientu)
+            {
+                var vysilaniSocket = (TcpClient)klient.Value;
+                var vysilaniProud = vysilaniSocket.GetStream();
+                vysilaniProud.Write(odesilanaData, 0, odesilanaData.Length);
+                vysilaniProud.Flush();
+            }
+
+            Vysilani(odesilatel, "Poslal obrázek " + nazev + pripona);
         }
 
         private void UlozitObrazek(byte[] data, string nazev, string pripona)
