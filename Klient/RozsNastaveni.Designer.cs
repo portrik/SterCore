@@ -35,6 +35,7 @@
             this.RadioTm = new MaterialSkin.Controls.MaterialRadioButton();
             this.RadioSv = new MaterialSkin.Controls.MaterialRadioButton();
             this.BtnPotvrdit = new MaterialSkin.Controls.MaterialRaisedButton();
+            this.BtnZrusit = new MaterialSkin.Controls.MaterialFlatButton();
             this.SuspendLayout();
             // 
             // TxtPort
@@ -92,7 +93,7 @@
             this.RadioTm.Name = "RadioTm";
             this.RadioTm.Ripple = true;
             this.RadioTm.Size = new System.Drawing.Size(70, 30);
-            this.RadioTm.TabIndex = 22;
+            this.RadioTm.TabIndex = 2;
             this.RadioTm.Text = "Tmavý";
             this.RadioTm.UseVisualStyleBackColor = true;
             // 
@@ -108,7 +109,7 @@
             this.RadioSv.Name = "RadioSv";
             this.RadioSv.Ripple = true;
             this.RadioSv.Size = new System.Drawing.Size(66, 30);
-            this.RadioSv.TabIndex = 21;
+            this.RadioSv.TabIndex = 1;
             this.RadioSv.Text = "Světlý";
             this.RadioSv.UseVisualStyleBackColor = true;
             // 
@@ -120,16 +121,33 @@
             this.BtnPotvrdit.Name = "BtnPotvrdit";
             this.BtnPotvrdit.Primary = true;
             this.BtnPotvrdit.Size = new System.Drawing.Size(140, 50);
-            this.BtnPotvrdit.TabIndex = 24;
+            this.BtnPotvrdit.TabIndex = 3;
             this.BtnPotvrdit.Text = "Potvrdit nastavení";
             this.BtnPotvrdit.UseVisualStyleBackColor = true;
             this.BtnPotvrdit.Click += new System.EventHandler(this.BtnPotvrdit_Click);
+            // 
+            // BtnZrusit
+            // 
+            this.BtnZrusit.AutoSize = true;
+            this.BtnZrusit.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BtnZrusit.Depth = 0;
+            this.BtnZrusit.Location = new System.Drawing.Point(40, 318);
+            this.BtnZrusit.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.BtnZrusit.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnZrusit.Name = "BtnZrusit";
+            this.BtnZrusit.Primary = false;
+            this.BtnZrusit.Size = new System.Drawing.Size(104, 36);
+            this.BtnZrusit.TabIndex = 5;
+            this.BtnZrusit.Text = "Zrušit výběr";
+            this.BtnZrusit.UseVisualStyleBackColor = true;
+            this.BtnZrusit.Click += new System.EventHandler(this.BtnZrusit_Click);
             // 
             // RozsNastaveni
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(380, 380);
+            this.Controls.Add(this.BtnZrusit);
             this.Controls.Add(this.BtnPotvrdit);
             this.Controls.Add(this.materialLabel1);
             this.Controls.Add(this.RadioTm);
@@ -155,5 +173,6 @@
         private MaterialSkin.Controls.MaterialRadioButton RadioTm;
         private MaterialSkin.Controls.MaterialRadioButton RadioSv;
         private MaterialSkin.Controls.MaterialRaisedButton BtnPotvrdit;
+        private MaterialSkin.Controls.MaterialFlatButton BtnZrusit;
     }
 }

@@ -50,6 +50,7 @@
             this.BtnOdpojit.Primary = true;
             this.BtnOdpojit.Size = new System.Drawing.Size(117, 36);
             this.BtnOdpojit.TabIndex = 19;
+            this.BtnOdpojit.TabStop = false;
             this.BtnOdpojit.Text = "Odpojit se";
             this.BtnOdpojit.UseVisualStyleBackColor = true;
             this.BtnOdpojit.Click += new System.EventHandler(this.BtnOdpojit_Click);
@@ -61,6 +62,7 @@
             this.LstPripojeni.Name = "LstPripojeni";
             this.LstPripojeni.Size = new System.Drawing.Size(117, 446);
             this.LstPripojeni.TabIndex = 20;
+            this.LstPripojeni.TabStop = false;
             // 
             // TxtZprava
             // 
@@ -75,7 +77,7 @@
             this.TxtZprava.SelectionLength = 0;
             this.TxtZprava.SelectionStart = 0;
             this.TxtZprava.Size = new System.Drawing.Size(641, 23);
-            this.TxtZprava.TabIndex = 11;
+            this.TxtZprava.TabIndex = 0;
             this.TxtZprava.UseSystemPasswordChar = false;
             this.TxtZprava.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtZprava_KeyPress);
             // 
@@ -87,7 +89,7 @@
             this.BtnOdeslat.Name = "BtnOdeslat";
             this.BtnOdeslat.Primary = true;
             this.BtnOdeslat.Size = new System.Drawing.Size(128, 39);
-            this.BtnOdeslat.TabIndex = 21;
+            this.BtnOdeslat.TabIndex = 1;
             this.BtnOdeslat.Text = "Odeslat zprávu";
             this.BtnOdeslat.UseVisualStyleBackColor = true;
             this.BtnOdeslat.Click += new System.EventHandler(this.BtnOdeslat_Click);
@@ -122,12 +124,13 @@
             // 
             // VypisChatu
             // 
-            this.VypisChatu.Font = new System.Drawing.Font("Lucida Sans", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.VypisChatu.Font = new System.Drawing.Font("Gill Sans MT", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.VypisChatu.Location = new System.Drawing.Point(147, 74);
             this.VypisChatu.Name = "VypisChatu";
             this.VypisChatu.ReadOnly = true;
             this.VypisChatu.Size = new System.Drawing.Size(787, 485);
             this.VypisChatu.TabIndex = 24;
+            this.VypisChatu.TabStop = false;
             this.VypisChatu.Text = "";
             this.VypisChatu.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.VypisChatu_LinkClicked);
             this.VypisChatu.TextChanged += new System.EventHandler(this.VypisChatu_TextChanged);
@@ -137,6 +140,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(950, 620);
+            this.ControlBox = false;
             this.Controls.Add(this.VypisChatu);
             this.Controls.Add(this.OdeslatSoubor);
             this.Controls.Add(this.OdeslaniObrazku);
@@ -148,6 +152,7 @@
             this.MaximumSize = new System.Drawing.Size(950, 620);
             this.MinimumSize = new System.Drawing.Size(950, 620);
             this.Name = "OknoKlienta";
+            this.Sizable = false;
             this.Text = "SterCore";
             this.Load += new System.EventHandler(this.OknoKlienta_Load);
             ((System.ComponentModel.ISupportInitialize)(this.OdeslatSoubor)).EndInit();

@@ -16,7 +16,6 @@ namespace Klient
 
         public static IPAddress AdresaServeru = null;
         public static int Port = 8888;
-        public static bool ZmenaUdaju;
         public static string Prezdivka;
 
         public UvodKlienta()
@@ -59,14 +58,11 @@ namespace Klient
                         UlozeniNastaveni();
                     }
 
-                    var Okno = new OknoKlienta();
+                    var okno = new OknoKlienta();
                     Hide();
-                    Okno.ShowDialog();
+                    okno.ShowDialog();
 
-                    if (!ZmenaUdaju)
-                        Close();
-                    else
-                        Show();
+                    Show();
                 }
                 catch
                 {

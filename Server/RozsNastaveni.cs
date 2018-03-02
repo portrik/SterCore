@@ -3,7 +3,6 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using MaterialSkin;
 using MaterialSkin.Controls;
-using Server;
 
 namespace Server
 {
@@ -32,6 +31,8 @@ namespace Server
             try
             {
                 UvodServeru.Port = int.Parse(txtServerPort.Text);
+                UvodServeru.UlozeniHistorie = ChckUlozitHistorii.Checked;
+                UvodServeru.Kontrola = int.Parse(TxtKontrola.Text);
 
                 if (RadioSv.Checked)
                 {
@@ -59,6 +60,13 @@ namespace Server
         private void RozsNastaveni_Load(object sender, EventArgs e)
         {
             txtServerPort.Text = UvodServeru.Port.ToString();
+            ChckUlozitHistorii.Checked = UvodServeru.UlozeniHistorie;
+            TxtKontrola.Text = UvodServeru.Kontrola.ToString();
+        }
+
+        private void BtnZrusit_Click(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 }

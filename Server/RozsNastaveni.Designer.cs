@@ -35,6 +35,10 @@
             this.RadioSv = new MaterialSkin.Controls.MaterialRadioButton();
             this.RadioTm = new MaterialSkin.Controls.MaterialRadioButton();
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
+            this.ChckUlozitHistorii = new MaterialSkin.Controls.MaterialCheckBox();
+            this.BtnZrusit = new MaterialSkin.Controls.MaterialFlatButton();
+            this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
+            this.TxtKontrola = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.SuspendLayout();
             // 
             // materialLabel2
@@ -62,19 +66,18 @@
             this.txtServerPort.SelectionLength = 0;
             this.txtServerPort.SelectionStart = 0;
             this.txtServerPort.Size = new System.Drawing.Size(90, 23);
-            this.txtServerPort.TabIndex = 15;
-            this.txtServerPort.Text = "8888";
+            this.txtServerPort.TabIndex = 0;
             this.txtServerPort.UseSystemPasswordChar = false;
             // 
             // BtnPotvrdit
             // 
             this.BtnPotvrdit.Depth = 0;
-            this.BtnPotvrdit.Location = new System.Drawing.Point(228, 318);
+            this.BtnPotvrdit.Location = new System.Drawing.Point(298, 388);
             this.BtnPotvrdit.MouseState = MaterialSkin.MouseState.HOVER;
             this.BtnPotvrdit.Name = "BtnPotvrdit";
             this.BtnPotvrdit.Primary = true;
             this.BtnPotvrdit.Size = new System.Drawing.Size(140, 50);
-            this.BtnPotvrdit.TabIndex = 17;
+            this.BtnPotvrdit.TabIndex = 5;
             this.BtnPotvrdit.Text = "Potvrdit nastavení";
             this.BtnPotvrdit.UseVisualStyleBackColor = true;
             this.BtnPotvrdit.Click += new System.EventHandler(this.BtnPotvrdit_Click);
@@ -91,7 +94,7 @@
             this.RadioSv.Name = "RadioSv";
             this.RadioSv.Ripple = true;
             this.RadioSv.Size = new System.Drawing.Size(66, 30);
-            this.RadioSv.TabIndex = 18;
+            this.RadioSv.TabIndex = 1;
             this.RadioSv.Text = "Světlý";
             this.RadioSv.UseVisualStyleBackColor = true;
             // 
@@ -107,7 +110,7 @@
             this.RadioTm.Name = "RadioTm";
             this.RadioTm.Ripple = true;
             this.RadioTm.Size = new System.Drawing.Size(70, 30);
-            this.RadioTm.TabIndex = 19;
+            this.RadioTm.TabIndex = 2;
             this.RadioTm.Text = "Tmavý";
             this.RadioTm.UseVisualStyleBackColor = true;
             // 
@@ -124,11 +127,76 @@
             this.materialLabel1.TabIndex = 20;
             this.materialLabel1.Text = "Vzhed:";
             // 
+            // ChckUlozitHistorii
+            // 
+            this.ChckUlozitHistorii.AutoSize = true;
+            this.ChckUlozitHistorii.Depth = 0;
+            this.ChckUlozitHistorii.Font = new System.Drawing.Font("Roboto", 10F);
+            this.ChckUlozitHistorii.Location = new System.Drawing.Point(40, 352);
+            this.ChckUlozitHistorii.Margin = new System.Windows.Forms.Padding(0);
+            this.ChckUlozitHistorii.MouseLocation = new System.Drawing.Point(-1, -1);
+            this.ChckUlozitHistorii.MouseState = MaterialSkin.MouseState.HOVER;
+            this.ChckUlozitHistorii.Name = "ChckUlozitHistorii";
+            this.ChckUlozitHistorii.Ripple = true;
+            this.ChckUlozitHistorii.Size = new System.Drawing.Size(111, 30);
+            this.ChckUlozitHistorii.TabIndex = 4;
+            this.ChckUlozitHistorii.Text = "Uložit historii";
+            this.ChckUlozitHistorii.UseVisualStyleBackColor = true;
+            // 
+            // BtnZrusit
+            // 
+            this.BtnZrusit.AutoSize = true;
+            this.BtnZrusit.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BtnZrusit.Depth = 0;
+            this.BtnZrusit.Location = new System.Drawing.Point(41, 388);
+            this.BtnZrusit.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.BtnZrusit.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnZrusit.Name = "BtnZrusit";
+            this.BtnZrusit.Primary = false;
+            this.BtnZrusit.Size = new System.Drawing.Size(104, 36);
+            this.BtnZrusit.TabIndex = 6;
+            this.BtnZrusit.Text = "Zrušit výběr";
+            this.BtnZrusit.UseVisualStyleBackColor = true;
+            this.BtnZrusit.Click += new System.EventHandler(this.BtnZrusit_Click);
+            // 
+            // materialLabel3
+            // 
+            this.materialLabel3.AutoSize = true;
+            this.materialLabel3.Depth = 0;
+            this.materialLabel3.Font = new System.Drawing.Font("Roboto", 11F);
+            this.materialLabel3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.materialLabel3.Location = new System.Drawing.Point(37, 257);
+            this.materialLabel3.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialLabel3.Name = "materialLabel3";
+            this.materialLabel3.Size = new System.Drawing.Size(161, 19);
+            this.materialLabel3.TabIndex = 23;
+            this.materialLabel3.Text = "Rychlost kontroly (ms)";
+            // 
+            // TxtKontrola
+            // 
+            this.TxtKontrola.Depth = 0;
+            this.TxtKontrola.Hint = "";
+            this.TxtKontrola.Location = new System.Drawing.Point(41, 279);
+            this.TxtKontrola.MouseState = MaterialSkin.MouseState.HOVER;
+            this.TxtKontrola.Name = "TxtKontrola";
+            this.TxtKontrola.PasswordChar = '\0';
+            this.TxtKontrola.SelectedText = "";
+            this.TxtKontrola.SelectionLength = 0;
+            this.TxtKontrola.SelectionStart = 0;
+            this.TxtKontrola.Size = new System.Drawing.Size(90, 23);
+            this.TxtKontrola.TabIndex = 3;
+            this.TxtKontrola.UseSystemPasswordChar = false;
+            // 
             // RozsNastaveni
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(380, 380);
+            this.ClientSize = new System.Drawing.Size(450, 450);
+            this.ControlBox = false;
+            this.Controls.Add(this.TxtKontrola);
+            this.Controls.Add(this.materialLabel3);
+            this.Controls.Add(this.BtnZrusit);
+            this.Controls.Add(this.ChckUlozitHistorii);
             this.Controls.Add(this.materialLabel1);
             this.Controls.Add(this.RadioTm);
             this.Controls.Add(this.RadioSv);
@@ -154,5 +222,9 @@
         private MaterialSkin.Controls.MaterialRadioButton RadioSv;
         private MaterialSkin.Controls.MaterialRadioButton RadioTm;
         private MaterialSkin.Controls.MaterialLabel materialLabel1;
+        private MaterialSkin.Controls.MaterialCheckBox ChckUlozitHistorii;
+        private MaterialSkin.Controls.MaterialFlatButton BtnZrusit;
+        private MaterialSkin.Controls.MaterialLabel materialLabel3;
+        private MaterialSkin.Controls.MaterialSingleLineTextField TxtKontrola;
     }
 }

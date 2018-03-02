@@ -46,7 +46,7 @@
             this.BtnServerStart.Name = "BtnServerStart";
             this.BtnServerStart.Primary = true;
             this.BtnServerStart.Size = new System.Drawing.Size(140, 50);
-            this.BtnServerStart.TabIndex = 5;
+            this.BtnServerStart.TabIndex = 4;
             this.BtnServerStart.Text = "Start serveru";
             this.BtnServerStart.UseVisualStyleBackColor = true;
             this.BtnServerStart.Click += new System.EventHandler(this.BtnServerStart_Click);
@@ -76,7 +76,7 @@
             this.txtServerIP.SelectionLength = 0;
             this.txtServerIP.SelectionStart = 0;
             this.txtServerIP.Size = new System.Drawing.Size(100, 23);
-            this.txtServerIP.TabIndex = 1;
+            this.txtServerIP.TabIndex = 0;
             this.txtServerIP.UseSystemPasswordChar = false;
             this.txtServerIP.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
             // 
@@ -92,7 +92,7 @@
             this.txtPocetKlientu.SelectionLength = 0;
             this.txtPocetKlientu.SelectionStart = 0;
             this.txtPocetKlientu.Size = new System.Drawing.Size(50, 23);
-            this.txtPocetKlientu.TabIndex = 2;
+            this.txtPocetKlientu.TabIndex = 1;
             this.txtPocetKlientu.Text = "5";
             this.txtPocetKlientu.UseSystemPasswordChar = false;
             this.txtPocetKlientu.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.StartServer_Enter);
@@ -121,7 +121,7 @@
             this.BtnRozsNastaveni.Name = "BtnRozsNastaveni";
             this.BtnRozsNastaveni.Primary = false;
             this.BtnRozsNastaveni.Size = new System.Drawing.Size(164, 36);
-            this.BtnRozsNastaveni.TabIndex = 4;
+            this.BtnRozsNastaveni.TabIndex = 3;
             this.BtnRozsNastaveni.Text = "Rozšířená nastavení";
             this.BtnRozsNastaveni.UseVisualStyleBackColor = true;
             this.BtnRozsNastaveni.Click += new System.EventHandler(this.BtnRozsNastaveni_click);
@@ -140,7 +140,7 @@
             this.ChckUlozitNast.Name = "ChckUlozitNast";
             this.ChckUlozitNast.Ripple = true;
             this.ChckUlozitNast.Size = new System.Drawing.Size(174, 30);
-            this.ChckUlozitNast.TabIndex = 3;
+            this.ChckUlozitNast.TabIndex = 2;
             this.ChckUlozitNast.Text = "Pamatovat si nastavení";
             this.ChckUlozitNast.UseVisualStyleBackColor = true;
             // 

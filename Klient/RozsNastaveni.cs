@@ -67,5 +67,10 @@ namespace Klient
         {
             TxtPort.Text = UvodKlienta.Port.ToString();
         }
+
+        private void BtnZrusit_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }

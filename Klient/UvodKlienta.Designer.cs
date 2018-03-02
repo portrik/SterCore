@@ -124,7 +124,7 @@
             this.ChckUlozitNast.Name = "ChckUlozitNast";
             this.ChckUlozitNast.Ripple = true;
             this.ChckUlozitNast.Size = new System.Drawing.Size(174, 30);
-            this.ChckUlozitNast.TabIndex = 7;
+            this.ChckUlozitNast.TabIndex = 2;
             this.ChckUlozitNast.Text = "Pamatovat si nastavení";
             this.ChckUlozitNast.UseVisualStyleBackColor = true;
             // 
@@ -139,7 +139,7 @@
             this.BtnRozsNastaveni.Name = "BtnRozsNastaveni";
             this.BtnRozsNastaveni.Primary = false;
             this.BtnRozsNastaveni.Size = new System.Drawing.Size(164, 36);
-            this.BtnRozsNastaveni.TabIndex = 8;
+            this.BtnRozsNastaveni.TabIndex = 3;
             this.BtnRozsNastaveni.Text = "Rozšířená nastavení";
             this.BtnRozsNastaveni.UseVisualStyleBackColor = true;
             this.BtnRozsNastaveni.Click += new System.EventHandler(this.BtnRozsNastaveni_Click);

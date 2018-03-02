@@ -77,7 +77,6 @@ namespace Klient
                 {
                     MessageBox.Show("K zadanému serveru se nepodařilo připojit.", "Chyba");
                 }
-                UvodKlienta.ZmenaUdaju = true;
                 Close();
             }
         }
@@ -93,48 +92,71 @@ namespace Klient
                 {
                     while (_komunikace.Connected)
                     {
-                        var data = new byte[1024 * 1024 * 4]; //Pole pro příjem sériových dat
-                        var znak = new byte[3];
-
-                        _prijem.Read(data, 0, _komunikace.ReceiveBufferSize); //Načtení sériových dat
-
-                        Array.Copy(data, znak, 3);
-
-                        var uprava = Encoding.Unicode.GetString(znak);
-
-                        switch (uprava[0])
+                        if (_prijem.CanRead)
                         {
-                            case '0': //Běžná zpráva
-                            {
-                                var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
-                                var zprava = dekodovani.Split('φ');
-                                Vypsani(zprava[1] + zprava[2]);
-                                break;
-                            }
-                            case '1': //TODO: Zpracování obrázku
-                            {
-                                ZpracovaniSouboru(data, "Obrazek");
+                            var data = new byte[1024 * 1024 * 4]; //Pole pro příjem sériových dat
+                            var znak = new byte[3];
+                            var potvrzeni = Encoding.Unicode.GetBytes("9φ");
 
-                                break;
-                            }
-                            case '2': //TODO: Zpracování souboru
+                            _prijem.Read(data, 0, _komunikace.ReceiveBufferSize); //Načtení sériových dat
+
+                            Array.Copy(data, znak, 3);
+
+                            var uprava = Encoding.Unicode.GetString(znak);
+
+                            switch (uprava[0])
                             {
-                                ZpracovaniSouboru(data, "Soubor");
+                                case '0': //Běžná zpráva
+                                {
+                                    var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
+                                    var zprava = dekodovani.Split('φ');
+                                    Vypsani(zprava[1] + zprava[2]);
+                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                   break;
+                                }
+                                case '1': //TODO: Zpracování obrázku
+                                {
+                                    ZpracovaniSouboru(data, "Obrazek");
+                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                    break;
+                                }
+                                case '2': //TODO: Zpracování souboru
+                                {
+                                    ZpracovaniSouboru(data, "Soubor");
+                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                    break;
+                                }
+                                case '3': //TODO: Seznam klientů
+                                {
+                                    var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
+                                    var seznam = dekodovani.Split('φ');
+                                    var jmena = seznam[1].Split(',');
 
-                                break;
+                                    foreach (var jmeno in jmena)
+                                        if (InvokeRequired)
+                                            Invoke((MethodInvoker)(() => LstPripojeni.Items.Add(jmeno)));
+                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                    break;
+                                }
+                                case '4'://Odpojení 
+                                {
+                                    throw new ApplicationException();
+                                }
+                                case '5': //Historie
+                                {
+                                    var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
+                                    var historie = dekodovani.Split('φ');
+                                    VypisChatu.Text = historie[1].TrimEnd('\n');
+                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                    break;
+                                }
+                                case '9': //Kontrola přijatých dat - klient nepřijímá
+                                {
+                                    break;
+                                }
                             }
-                            case '3': //TODO: Seznam klientů
-                            {
-                                var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
-                                var seznam = dekodovani.Split('φ');
-                                var jmena = seznam[1].Split(',');
 
-                                foreach (var jmeno in jmena)
-                                    if (InvokeRequired)
-                                        Invoke((MethodInvoker) (() => LstPripojeni.Items.Add(jmeno)));
-
-                                break;
-                            }
+                            
                         }
                     }
                 }
@@ -143,7 +165,6 @@ namespace Klient
             {
                 MessageBox.Show("Server ukončil spojení.", "Konec spojení");
 
-                UvodKlienta.ZmenaUdaju = true;
                 if (InvokeRequired) Invoke((MethodInvoker) (() => Close()));
 
                 _prijmani.Join();
@@ -246,7 +267,6 @@ namespace Klient
             _odesilani.Write(zprava, 0, zprava.Length); //Odeslání sériových dat
             _odesilani.Flush(); //Vyprázdnění proudu
 
-            UvodKlienta.ZmenaUdaju = true;
             Close();
         }
 
