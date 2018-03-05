@@ -92,7 +92,7 @@ namespace Server
                 if (!_stop)
                 {
                     Invoke((MethodInvoker) (() =>
-                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + "Objevila se chyba:"));
+                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                     Invoke((MethodInvoker) (() =>
                         VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
                 }
@@ -112,7 +112,7 @@ namespace Server
                 {
                     while (!_stop)
                     {
-                        byte[] hrubaData = new byte[1024 * 1024 * 4];
+                        byte[] hrubaData = new byte[1024 * 1024];
                         cteni.Read(hrubaData, 0, pripojeni.ReceiveBufferSize); //Načtení sériových dat     
 
                         var znacka = new byte[4];
@@ -130,11 +130,20 @@ namespace Server
                             }
                             case '1': //TODO: Obrázek
                             {
-                                
+                                var hlavicka = new byte[128];
+                                Array.Copy(hrubaData, 0, hlavicka, 0, 128);
+                                var prevod = Encoding.Unicode.GetString(hlavicka).Split('φ');
+
+                                ZpracovaniSouboru(hrubaData, prevod[4], prevod[5], jmeno, "Obrazek");
                                 break;
                             }
                             case '2': //TODO: Soubor
                             {
+                                var hlavicka = new byte[128];
+                                Array.Copy(hrubaData, 0, hlavicka, 0, 128);
+                                var prevod = Encoding.Unicode.GetString(hlavicka).Split('φ');
+
+                                ZpracovaniSouboru(hrubaData, prevod[4], prevod[5], jmeno, "Soubor");
                                 break;
                             }
                             case '3': //Seznam klientů - server nevyužívá
@@ -168,58 +177,6 @@ namespace Server
                         OdebratKlienta(jmeno);
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        ///     Odešle soubor všem klientům.
-        /// </summary>
-        /// <param name="data">Data souboru</param>
-        /// <param name="tvurce">Odesílatel souboru</param>
-        /// <param name="nazev"></param>
-        private void VysilaniObrazku(byte[] data, string tvurce, string nazev)
-        {
-            try
-            {
-                foreach (KeyValuePair<string,TcpClient> klient in _seznamKlientu)
-                {
-                    var vysilaniSocket = klient.Value;
-                    var vysilaniProud = vysilaniSocket.GetStream();
-                    vysilaniProud.Write(data, 0, data.Length);
-                    vysilaniProud.Flush();
-                }
-
-                Vysilani(tvurce, "Poslal obrázek (" + nazev + ")");
-            }
-            catch (Exception x)
-            {
-                Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() +  "Objevila se chyba:"));
-                Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
-            }
-        }
-
-        private void VysilaniSouboru(byte[] data, string tvurce, string nazev)
-        {
-            try
-            {
-                foreach (KeyValuePair<string,TcpClient> klient in _seznamKlientu)
-                {
-                    var vysilaniSocket = klient.Value;
-                    var vysilaniProud = vysilaniSocket.GetStream();
-                    vysilaniProud.Write(data, 0, data.Length);
-                    vysilaniProud.Flush();
-                }
-
-                Vysilani(tvurce, "Poslal soubor (" + nazev + ")");
-            }
-            catch (Exception x)
-            {
-                Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
-                Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
             }
         }
 
@@ -325,8 +282,19 @@ namespace Server
             else
                 VypisKlientu.Items.Remove(jmeno);
 
-            Invoke((MethodInvoker) (() => _seznamKlientu.Remove(jmeno))); //Odstraní klienta ze seznamu
-            Vysilani("SERVER", jmeno + " se odpojil(a)"); //Ohlasí odpojení ostatním klientům
+            if (InvokeRequired)
+                Invoke((MethodInvoker) (() => _seznamKlientu.Remove(jmeno)));
+            else
+                _seznamKlientu.Remove(jmeno);
+
+            if (InvokeRequired)
+                Invoke((MethodInvoker)(() => _kontrola.Remove(jmeno)));
+            else
+                _kontrola.Remove(jmeno);
+
+
+
+            Vysilani("SERVER", jmeno + " se odpojil(a)"); 
             Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
         }
 
@@ -474,7 +442,7 @@ namespace Server
                     var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
                     var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    ZpracovaniSouboru(obrazek, nazev, pripona, "SERVER");
+                    ZpracovaniSouboru(obrazek, nazev, pripona, "SERVER", "Obrazek");
                 }
                 catch (Exception x)
                 {
@@ -492,57 +460,45 @@ namespace Server
             {
                 var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (soubor.Length < 4194004)
-                    try
-                    {
-                        var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) +
-                                    Path.GetExtension(VolbaSouboru.FileName);
-                        var metaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
-                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + soubor.Length + "φ";
-                        var znacka = Encoding.Unicode.GetBytes(metaData);
-                        var zprava = new byte[1024 * 1024 * 4];
+                try
+                {
+                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                        Array.Copy(znacka, 0, zprava, 0, znacka.Length);
-                        Array.Copy(soubor, 0, zprava, 300, soubor.Length);
-
-                       
-
-                        
-                    }
-                    catch (Exception x)
-                    {
-                        MessageBox.Show(x.StackTrace);
-                        MessageBox.Show(x.Message);
-                    }
-                else
-                    MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
+                    ZpracovaniSouboru(soubor, nazev, pripona, "SERVER", "Soubor");
+                }
+                catch (Exception x)
+                {
+                    MessageBox.Show(x.StackTrace);
+                    MessageBox.Show(x.Message);
+                }
             }
         }
 
-        private void ZpracovaniSouboru(byte[] data, string nazev, string pripona, string odesilatel)
+        private void ZpracovaniSouboru(byte[] data, string nazev, string pripona, string odesilatel, string druh)
         {
-            UlozitObrazek(data, nazev, pripona);
+            UlozitSoubor(data, nazev, pripona, druh);
 
-            var pozicePuvodni = 0;
+            var pozice = 0;
             var pocet = 0;
 
             byte[] odesilanaData = new byte[1500];
 
-            while (pozicePuvodni < data.Length)
+            while (pozice < data.Length)
             {
                 byte[] metaData;
                 
-                if (data.Length - pozicePuvodni > 1372)
+                if (data.Length - pozice > 1372)
                 {
                     metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
-                    Array.Copy(data, pozicePuvodni, odesilanaData, 128, 1372);
-                    pozicePuvodni += 1372;
+                    Array.Copy(data, pozice, odesilanaData, 128, 1372);
+                    pozice += 1372;
                 }
                 else
                 {
-                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozicePuvodni) + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
-                    Array.Copy(data, pozicePuvodni, odesilanaData, 128, data.Length - pozicePuvodni);
-                    pozicePuvodni += data.Length - pozicePuvodni;
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozice) + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
+                    pozice += data.Length - pozice;
                 }
 
                 Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
@@ -567,15 +523,15 @@ namespace Server
             Vysilani(odesilatel, "Poslal obrázek " + nazev + pripona);
         }
 
-        private void UlozitObrazek(byte[] data, string nazev, string pripona)
+        private static void UlozitSoubor(byte[] data, string nazev, string pripona, string druh)
         {
-            var slozkaDruh = Path.Combine(UvodServeru.SlozkaSouboru, "Obrazek");
+            var slozkaDruh = Path.Combine(UvodServeru.SlozkaSouboru, druh);
 
             if (!UvodServeru.SlozkaExistuje(UvodServeru.SlozkaSouboru)) Directory.CreateDirectory(UvodServeru.SlozkaSouboru);
 
             if (!UvodServeru.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
 
-            var cesta = Path.Combine(UvodServeru.SlozkaSouboru, "Obrazek") + @"\" + nazev + pripona;
+            var cesta = Path.Combine(UvodServeru.SlozkaSouboru, druh) + @"\" + nazev + pripona;
 
             if (File.Exists(cesta))
             {
@@ -583,7 +539,7 @@ namespace Server
 
                 while (File.Exists(cesta))
                 {
-                    cesta = Path.Combine(UvodServeru.SlozkaSouboru, "Obrazek") + @"\" + nazev + "(" + index + ")" +
+                    cesta = Path.Combine(UvodServeru.SlozkaSouboru, druh) + @"\" + nazev + "(" + index + ")" +
                             pripona;
                     ++index;
                 }
@@ -597,10 +553,10 @@ namespace Server
         /// </summary>
         private void OdeslatHistorii(string jmeno)
         {
-            string pomocna = "5φ";
+            var pomocna = "5φ";
             Invoke((MethodInvoker) (() => pomocna += VypisChatu.Text));
             var historie = Encoding.Unicode.GetBytes(pomocna);
-            Thread odeslani = new Thread(() => OdeslaniDat(historie, jmeno));
+            var odeslani = new Thread(() => OdeslaniDat(historie, jmeno));
             odeslani.Start();
         }
 
@@ -611,24 +567,34 @@ namespace Server
 
         private void OdeslaniDat(byte[] data, string jmeno)
         {
-            if (!_stop)
+            try
             {
-                while (!Kontrola(jmeno))
+                if (!_stop)
                 {
-                    Thread.Sleep(UvodServeru.Kontrola);
+                    while (!Kontrola(jmeno))
+                    {
+                        Thread.Sleep(UvodServeru.Kontrola);
+                    }
+
+                    _kontrola[jmeno] = false;
+
+                    do
+                    {
+                        var vysilaniSocket = _seznamKlientu[jmeno];
+                        var vysilaniStream = vysilaniSocket.GetStream();
+                        vysilaniStream.Write(data, 0, data.Length);
+                        vysilaniStream.Flush();
+                        Thread.Sleep(UvodServeru.Kontrola);
+                    } while (!Kontrola(jmeno));
                 }
-
-                _kontrola[jmeno] = false;
-
-                do
-                {
-                    var vysilaniSocket = _seznamKlientu[jmeno];
-                    var vysilaniProud = vysilaniSocket.GetStream();
-                    vysilaniProud.Write(data, 0, data.Length);
-                    vysilaniProud.Flush();
-                    Thread.Sleep(UvodServeru.Kontrola);
-                } while (!Kontrola(jmeno));
             }
+            catch(Exception x)
+            {
+                Invoke((MethodInvoker)(() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + "Objevila se chyba:"));
+                Invoke((MethodInvoker)(() =>
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+            } 
         }
     }
 }

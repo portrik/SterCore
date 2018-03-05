@@ -18,16 +18,14 @@ namespace Klient
         private readonly IPEndPoint _adresa;
         private readonly string _prezdivka;
 
-        private readonly string _slozka = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "Stercore soubory");
-
         private TcpClient _komunikace;
         private NetworkStream _prijem, _odesilani = default(NetworkStream);
         private Thread _prijmani;
-        private byte[] _obrazek;
-        private bool _prijemObrazku;
+        private byte[] _soubor;
+        private bool _prijemSouboru;
         private int _pozice;
- 
+
+
         public OknoKlienta()
         {
             InitializeComponent();
@@ -77,6 +75,7 @@ namespace Klient
                 {
                     MessageBox.Show("K zadanému serveru se nepodařilo připojit.", "Chyba");
                 }
+
                 Close();
             }
         }
@@ -94,7 +93,7 @@ namespace Klient
                     {
                         if (_prijem.CanRead)
                         {
-                            var data = new byte[1024 * 1024 * 4]; //Pole pro příjem sériových dat
+                            var data = new byte[1024 * 1024]; //Pole pro příjem sériových dat
                             var znak = new byte[3];
                             var potvrzeni = Encoding.Unicode.GetBytes("9φ");
 
@@ -112,33 +111,35 @@ namespace Klient
                                     var zprava = dekodovani.Split('φ');
                                     Vypsani(zprava[1] + zprava[2]);
                                     _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
-                                   break;
+                                    break;
                                 }
                                 case '1': //TODO: Zpracování obrázku
                                 {
-                                    ZpracovaniSouboru(data, "Obrazek");
+                                    UlozitSoubor(data, "Obrazek");
                                     _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
                                     break;
                                 }
                                 case '2': //TODO: Zpracování souboru
                                 {
-                                    ZpracovaniSouboru(data, "Soubor");
+                                    UlozitSoubor(data, "Soubor");
                                     _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
                                     break;
                                 }
                                 case '3': //TODO: Seznam klientů
                                 {
+                                    LstPripojeni.Items.Clear();
+
                                     var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
                                     var seznam = dekodovani.Split('φ');
                                     var jmena = seznam[1].Split(',');
 
                                     foreach (var jmeno in jmena)
                                         if (InvokeRequired)
-                                            Invoke((MethodInvoker)(() => LstPripojeni.Items.Add(jmeno)));
+                                            Invoke((MethodInvoker) (() => LstPripojeni.Items.Add(jmeno)));
                                     _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
                                     break;
                                 }
-                                case '4'://Odpojení 
+                                case '4': //Odpojení 
                                 {
                                     throw new ApplicationException();
                                 }
@@ -156,7 +157,7 @@ namespace Klient
                                 }
                             }
 
-                            
+
                         }
                     }
                 }
@@ -183,22 +184,8 @@ namespace Klient
                 VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + zprava;
         }
 
-        /// <summary>
-        ///     Zjistí, zda zadaný adresář existuje.
-        /// </summary>
-        /// <param name="cesta">Cesta k adresáři</param>
-        /// <returns>True - složka existuje, False - složka neexistuje</returns>
-        private bool SlozkaSouboru(string cesta)
-        {
-            return Directory.Exists(cesta);
-        }
 
-        /// <summary>
-        ///     Uloží přijatý soubor do příslušné složky.
-        /// </summary>
-        /// <param name="data">Přijatá data souboru</param>
-        /// <param name="druh">Určuje, zda se jedná o obrázek nebo o soubor jiného druhu.</param>
-        private void ZpracovaniSouboru(byte[] data, string druh)
+        private void UlozitSoubor(byte[] data, string druh)
         {
             byte[] metaData = new byte[128];
             Array.Copy(data, 0, metaData, 0, 128);
@@ -208,33 +195,30 @@ namespace Klient
 
             if (Convert.ToInt32(split[1]) >= 0)
             {
-                if (!_prijemObrazku)
+                if (!_prijemSouboru)
                 {
-                    _obrazek = new byte[delkaSouboru];
-                    Array.Copy(data, 128, _obrazek, 0, velikostDat - 128);
-                    _prijemObrazku = true;
+                    _soubor = new byte[delkaSouboru];
+                    Array.Copy(data, 128, _soubor, 0, velikostDat - 128);
+                    _prijemSouboru = true;
                     _pozice += velikostDat;
                 }
                 else
                 {
-                    Array.Copy(data, 128, _obrazek, _pozice, velikostDat - 128);
+                    Array.Copy(data, 128, _soubor, _pozice, velikostDat - 128);
                     _pozice += velikostDat;
                 }
             }
             else
             {
-                var slozkaServer = Path.Combine(_slozka, "Klient");
-                var slozkaDruh = Path.Combine(slozkaServer, druh);
+                var slozkaDruh = Path.Combine(UvodKlienta.SlozkaSouboru, druh);
 
-                if (!SlozkaSouboru(_slozka)) Directory.CreateDirectory(_slozka);
+                if (!UvodKlienta.SlozkaExistuje(UvodKlienta.SlozkaSouboru))
+                    Directory.CreateDirectory(UvodKlienta.SlozkaSouboru);
 
-                if (!SlozkaSouboru(slozkaServer)) Directory.CreateDirectory(slozkaServer);
-
-                if (!SlozkaSouboru(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
+                if (!UvodKlienta.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
 
 
-                var cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                                "Stercore soubory", "Klient", druh) + @"\" + split[4] + split[5].Trim('\0');
+                var cesta = slozkaDruh + @"\" + split[4] + split[5].Trim('\0');
 
                 if (File.Exists(cesta))
                 {
@@ -242,16 +226,15 @@ namespace Klient
 
                     while (File.Exists(cesta))
                     {
-                        cesta = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                                    "Stercore soubory", "Klient", druh) + @"\" + split[4] + "(" + index + ")" +
+                        cesta = slozkaDruh + @"\" + split[4] + "(" + index + ")" +
                                 split[5].Trim('\0');
                         ++index;
                     }
                 }
 
-                File.WriteAllBytes(cesta, _obrazek);
-                _obrazek = null;
-                _prijemObrazku = false;
+                File.WriteAllBytes(cesta, _soubor);
+                _soubor = null;
+                _prijemSouboru = false;
                 _pozice = 0;
             }
         }
@@ -307,26 +290,18 @@ namespace Klient
             {
                 var obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (obrazek.Length < 4194004)
-                    try
-                    {
-                        var metaData = "1φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
-                                       Path.GetExtension(VolbaSouboru.FileName) + "φ" + obrazek.Length + "φ";
-                        var znacka = Encoding.Unicode.GetBytes(metaData);
-                        var zprava = new byte[1024 * 1024 * 4];
+                try
+                {
+                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                        Array.Copy(znacka, 0, zprava, 0, znacka.Length);
-                        Array.Copy(obrazek, 0, zprava, 300, obrazek.Length);
-
-                        VyslaniSouboru(zprava);
-                    }
-                    catch (Exception x)
-                    {
-                        MessageBox.Show(x.StackTrace);
-                        MessageBox.Show(x.Message);
-                    }
-                else
-                    MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
+                    OdeslaniSouboru(obrazek, nazev, pripona, 2);
+                }
+                catch (Exception x)
+                {
+                    MessageBox.Show(x.StackTrace);
+                    MessageBox.Show(x.Message);
+                }
             }
         }
 
@@ -368,60 +343,64 @@ namespace Klient
                 LstPripojeni.ForeColor = Color.White;
             }
 
-            _prijemObrazku = false;
+            _prijemSouboru = false;
             _pozice = 0;
             Pripojeni();
         }
 
         private void OdeslatSoubor_Click(object sender, EventArgs e)
         {
+            VolbaSouboru.Filter = null;
+
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                VolbaSouboru.Filter = null;
+                var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                if (VolbaSouboru.ShowDialog() == DialogResult.OK)
+                try
                 {
-                    var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
+                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    if (soubor.Length < 4194004)
-                        try
-                        {
-                            var metaData = "2φ" + Path.GetFileNameWithoutExtension(VolbaSouboru.FileName) + "φ" +
-                                           Path.GetExtension(VolbaSouboru.FileName) + "φ" + soubor.Length + "φ";
-                            var znacka = Encoding.Unicode.GetBytes(metaData);
-                            var zprava = new byte[1024 * 1024 * 4];
-                            MessageBox.Show(soubor.Length.ToString());
-
-                            Array.Copy(znacka, 0, zprava, 0, znacka.Length);
-                            Array.Copy(soubor, 0, zprava, 300, soubor.Length);
-
-                            VyslaniSouboru(zprava);
-                        }
-                        catch (Exception x)
-                        {
-                            MessageBox.Show(x.StackTrace);
-                            MessageBox.Show(x.Message);
-                        }
-                    else
-                        MessageBox.Show("Zvolený soubor je pro přenos příliš velký!\nMaximum jsou 4 MB.", "Chyba!");
+                    OdeslaniSouboru(soubor, nazev, pripona, 1);
+                }
+                catch (Exception x)
+                {
+                    MessageBox.Show(x.StackTrace);
+                    MessageBox.Show(x.Message);
                 }
             }
         }
 
-        private void VyslaniSouboru(byte[] data)
+        private void OdeslaniSouboru(byte[] data, string nazev, string pripona, int druh)
         {
-            try
+            var pozice = 0;
+            var pocet = 0;
+
+            byte[] odesilanaData = new byte[1500];
+
+            while (pozice < data.Length)
             {
-                _odesilani.Write(data, 0, data.Length);
+                byte[] metaData;
+
+                if (data.Length - pozice > 1372)
+                {
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    Array.Copy(data, pozice, odesilanaData, 128, 1372);
+                    pozice += 1372;
+                }
+                else
+                {
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozice) + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
+                    pozice += data.Length - pozice;
+                }
+
+                Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
+                
+                _odesilani.Write(odesilanaData, 0, 1500);
                 _odesilani.Flush();
-            }
-            catch (Exception x)
-            {
-                Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() +
-                                       " Objevila se chyba:"));
-                Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+
+                ++pocet;
             }
         }
     }

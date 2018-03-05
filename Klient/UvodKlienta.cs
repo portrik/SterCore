@@ -13,6 +13,8 @@ namespace Klient
         public static ColorScheme Vzhled = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
             Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
         public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT;
+        public static string SlozkaSouboru = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "Stercore soubory", "Klient");
 
         public static IPAddress AdresaServeru = null;
         public static int Port = 8888;
@@ -25,7 +27,7 @@ namespace Klient
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
 
-            if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            if (File.Exists(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 NacistNastaveni();
                 materialSkinManager.Theme = Tema;
@@ -86,7 +88,7 @@ namespace Klient
         /// <param name="e"></param>
         private void KlientUvod_Load(object sender, EventArgs e)
         {
-            if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            if (File.Exists(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 TxtPrezdivka.Text = Prezdivka;
                 TxtIP.Text = AdresaServeru.ToString();
@@ -122,7 +124,7 @@ namespace Klient
 
         private void UlozeniNastaveni()
         {
-            using (StreamWriter Zapis = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            using (StreamWriter Zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 Zapis.WriteLine("IP Adresa: " + AdresaServeru);
                 Zapis.WriteLine("Port: " + Port);
@@ -133,7 +135,7 @@ namespace Klient
 
         private void NacistNastaveni()
         {
-            using (StreamReader Cteni = new StreamReader(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Stercore soubory", "Klient") + "\\Nastaveni.txt"))
+            using (StreamReader Cteni = new StreamReader(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 string[] Radek = Cteni.ReadLine().Split(':');
                 AdresaServeru = IPAddress.Parse(Radek[1].Trim());
@@ -165,6 +167,16 @@ namespace Klient
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = Tema;
             materialSkinManager.ColorScheme = Vzhled;
+        }
+
+        /// <summary>
+        ///     Zjistí, zda zadaný adresář existuje.
+        /// </summary>
+        /// <param name="cesta">Cesta k adresáři</param>
+        /// <returns>True - složka existuje, False - složka neexistuje</returns>
+        public static bool SlozkaExistuje(string cesta)
+        {
+            return Directory.Exists(cesta);
         }
     }
 }
