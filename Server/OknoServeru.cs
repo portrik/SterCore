@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -17,14 +15,16 @@ namespace Server
 {
     public partial class OknoServeru : MaterialForm
     {
-        private Thread _behServeru; //Thread pro běh serveru na pozadí nezávisle na hlavním okně
-
         private readonly IPEndPoint _ipAdresa;
+        private readonly Dictionary<string, bool> _kontrola = new Dictionary<string, bool>();
         private readonly int _pocetKlientu; //Proměná portu serveru a maximální počet klientů(0 znamená neomezený počet)
+
+        private readonly Dictionary<string, TcpClient>
+            _seznamKlientu = new Dictionary<string, TcpClient>(); //Seznam připojených uživatelů a jejich adres
+
+        private Thread _behServeru; //Thread pro běh serveru na pozadí nezávisle na hlavním okně
         private int _pocetPripojeni; //Počet aktuálně připojených uživatelů
         private TcpListener _prichoziKomunikace; //Poslouchá příchozí komunikaci a žádosti i připojení
-        private readonly Dictionary<string, TcpClient> _seznamKlientu = new Dictionary<string, TcpClient>(); //Seznam připojených uživatelů a jejich adres
-        private readonly Dictionary<string, bool> _kontrola = new Dictionary<string, bool>();
 
         private bool _stop; //Proměná pro zastavení běhu serveru
 
@@ -66,8 +66,8 @@ namespace Server
                             _seznamKlientu.Add(jmeno, klient);
                             _kontrola.Add(jmeno, true);
                             Invoke((MethodInvoker) (() => VypisKlientu.Items.Add(jmeno)));
-                            Invoke((MethodInvoker)(() => Vysilani("SERVER", jmeno + " se připojil(a)")));
-                            Invoke((MethodInvoker)(() => AktualizaceSeznamu()));
+                            Invoke((MethodInvoker) (() => Vysilani("SERVER", jmeno + " se připojil(a)")));
+                            Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
 
                             OdeslatHistorii(jmeno);
 
@@ -112,7 +112,7 @@ namespace Server
                 {
                     while (!_stop)
                     {
-                        byte[] hrubaData = new byte[1024 * 1024];
+                        var hrubaData = new byte[1024 * 1024];
                         cteni.Read(hrubaData, 0, pripojeni.ReceiveBufferSize); //Načtení sériových dat     
 
                         var znacka = new byte[4];
@@ -161,10 +161,7 @@ namespace Server
                             }
                             case '9': //Kontrola, zda byla zpráva přijata a klient je schopný znovu přijímat.
                             {
-                                if (!Kontrola(jmeno))
-                                {
-                                    _kontrola[jmeno] = true;
-                                }
+                                if (!Kontrola(jmeno)) _kontrola[jmeno] = true;
                                 break;
                             }
                         }
@@ -172,10 +169,7 @@ namespace Server
                 }
                 catch
                 {
-                    if (!_stop)
-                    {
-                        OdebratKlienta(jmeno);
-                    }
+                    if (!_stop) OdebratKlienta(jmeno);
                 }
             }
         }
@@ -190,14 +184,14 @@ namespace Server
             try
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text +=  DateTime.Now.ToShortTimeString() + " " + tvurce + ": " +
-                        text + "\n")); //Vypíše zprávu na serveru
+                    VypisChatu.Text += DateTime.Now.ToShortTimeString() + " " + tvurce + ": " +
+                                       text + "\n")); //Vypíše zprávu na serveru
                 text = "0φ" + tvurce + "φ: " + text; //Naformátuje zprávu před odesláním                
                 var data = Encoding.Unicode.GetBytes(text); //Převede zprávu na byty
 
-                foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu)
+                foreach (var klient in _seznamKlientu)
                 {
-                    Thread odeslani = new Thread(() => OdeslaniDat(data, klient.Key));
+                    var odeslani = new Thread(() => OdeslaniDat(data, klient.Key));
                     odeslani.Start();
                 }
             }
@@ -219,14 +213,14 @@ namespace Server
             {
                 string jmena = null;
 
-                foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu) jmena += klient.Key + ",";
+                foreach (var klient in _seznamKlientu) jmena += klient.Key + ",";
 
                 var seznam = "3φ" + jmena; //Naformátuje zprávu před odesláním                
                 var data = Encoding.Unicode.GetBytes(seznam); //Převede zprávu na byty
 
-                foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu)
+                foreach (var klient in _seznamKlientu)
                 {
-                    Thread odeslani = new Thread(() => OdeslaniDat(data, klient.Key));
+                    var odeslani = new Thread(() => OdeslaniDat(data, klient.Key));
                     odeslani.Start();
                 }
             }
@@ -262,8 +256,8 @@ namespace Server
         /// <returns>Jméno je v pořádku</returns>
         private bool KontrolaJmena(string jmeno) //Zkontroluje, zda se jméno již nevyskytuje
         {
-            foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu)
-                if ( klient.Key == jmeno)
+            foreach (var klient in _seznamKlientu)
+                if (klient.Key == jmeno)
                     return false;
 
             return true;
@@ -288,13 +282,12 @@ namespace Server
                 _seznamKlientu.Remove(jmeno);
 
             if (InvokeRequired)
-                Invoke((MethodInvoker)(() => _kontrola.Remove(jmeno)));
+                Invoke((MethodInvoker) (() => _kontrola.Remove(jmeno)));
             else
                 _kontrola.Remove(jmeno);
 
 
-
-            Vysilani("SERVER", jmeno + " se odpojil(a)"); 
+            Vysilani("SERVER", jmeno + " se odpojil(a)");
             Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
         }
 
@@ -311,25 +304,19 @@ namespace Server
 
         private void OdebratKlienty()
         {
-            List<string> seznam = new List<string>();
+            var seznam = new List<string>();
 
-            foreach (KeyValuePair<string,TcpClient> klient in _seznamKlientu)
-            {
-                seznam.Add(klient.Key);
-            }
+            foreach (var klient in _seznamKlientu) seznam.Add(klient.Key);
 
             var data = Encoding.Unicode.GetBytes("4φ");
 
-            foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu)
+            foreach (var klient in _seznamKlientu)
             {
-                Thread odeslani = new Thread(() => OdeslaniDat(data, klient.Key));
+                var odeslani = new Thread(() => OdeslaniDat(data, klient.Key));
                 odeslani.Start();
             }
 
-            for (int i = 0; i < _seznamKlientu.Count; ++i)
-            {
-                _seznamKlientu[seznam[i]].Close();
-            }
+            for (var i = 0; i < _seznamKlientu.Count; ++i) _seznamKlientu[seznam[i]].Close();
         }
 
         /// <summary>
@@ -384,16 +371,15 @@ namespace Server
             }
 
             if (File.Exists(UvodServeru.SlozkaSouboru + "\\Historie.txt"))
-            {
-                VypisChatu.LoadFile(UvodServeru.SlozkaSouboru + "\\Historie.txt", RichTextBoxStreamType.UnicodePlainText);
-            }
+                VypisChatu.LoadFile(UvodServeru.SlozkaSouboru + "\\Historie.txt",
+                    RichTextBoxStreamType.UnicodePlainText);
 
             _behServeru = new Thread(PrijmaniKlientu)
-                {
-                    IsBackground = true
-                };
+            {
+                IsBackground = true
+            };
 
-                _behServeru.Start();
+            _behServeru.Start();
         }
 
         /// <summary>
@@ -482,41 +468,44 @@ namespace Server
             var pozice = 0;
             var pocet = 0;
 
-            byte[] odesilanaData = new byte[1500];
+            var odesilanaData = new byte[1500];
 
             while (pozice < data.Length)
             {
                 byte[] metaData;
-                
+
                 if (data.Length - pozice > 1372)
                 {
-                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" + nazev +
+                                                         "φ" + pripona);
                     Array.Copy(data, pozice, odesilanaData, 128, 1372);
                     pozice += 1372;
                 }
                 else
                 {
-                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozice) + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozice) + "φ" +
+                                                         data.Length + "φ" + nazev + "φ" + pripona);
                     Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
                     pozice += data.Length - pozice;
                 }
 
                 Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
 
-                foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu)
+                foreach (var klient in _seznamKlientu)
                 {
-                    Thread odeslani = new Thread(() => OdeslaniDat(odesilanaData, klient.Key));
+                    var odeslani = new Thread(() => OdeslaniDat(odesilanaData, klient.Key));
                     odeslani.Start();
                 }
 
                 ++pocet;
             }
 
-            odesilanaData = Encoding.Unicode.GetBytes("1φ" + -1 + "φ" + 0 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+            odesilanaData =
+                Encoding.Unicode.GetBytes("1φ" + -1 + "φ" + 0 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
 
-            foreach (KeyValuePair<string, TcpClient> klient in _seznamKlientu)
+            foreach (var klient in _seznamKlientu)
             {
-                Thread odeslani = new Thread(() => OdeslaniDat(odesilanaData, klient.Key));
+                var odeslani = new Thread(() => OdeslaniDat(odesilanaData, klient.Key));
                 odeslani.Start();
             }
 
@@ -527,7 +516,8 @@ namespace Server
         {
             var slozkaDruh = Path.Combine(UvodServeru.SlozkaSouboru, druh);
 
-            if (!UvodServeru.SlozkaExistuje(UvodServeru.SlozkaSouboru)) Directory.CreateDirectory(UvodServeru.SlozkaSouboru);
+            if (!UvodServeru.SlozkaExistuje(UvodServeru.SlozkaSouboru))
+                Directory.CreateDirectory(UvodServeru.SlozkaSouboru);
 
             if (!UvodServeru.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
 
@@ -549,7 +539,7 @@ namespace Server
         }
 
         /// <summary>
-        /// Odešle historii chatu novému klientovi.
+        ///     Odešle historii chatu novému klientovi.
         /// </summary>
         private void OdeslatHistorii(string jmeno)
         {
@@ -571,10 +561,7 @@ namespace Server
             {
                 if (!_stop)
                 {
-                    while (!Kontrola(jmeno))
-                    {
-                        Thread.Sleep(UvodServeru.Kontrola);
-                    }
+                    while (!Kontrola(jmeno)) Thread.Sleep(UvodServeru.Kontrola);
 
                     _kontrola[jmeno] = false;
 
@@ -588,13 +575,13 @@ namespace Server
                     } while (!Kontrola(jmeno));
                 }
             }
-            catch(Exception x)
+            catch (Exception x)
             {
-                Invoke((MethodInvoker)(() =>
+                Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + "Objevila se chyba:"));
-                Invoke((MethodInvoker)(() =>
+                Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
-            } 
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 using MaterialSkin;
 using MaterialSkin.Controls;
 
@@ -17,13 +16,9 @@ namespace Server
             materialSkinManager.ColorScheme = UvodServeru.Vzhled;
 
             if (UvodServeru.Tema == MaterialSkinManager.Themes.LIGHT)
-            {
                 RadioSv.Checked = true;
-            }
             else
-            {
                 RadioTm.Checked = true;
-            }
         }
 
         private void BtnPotvrdit_Click(object sender, EventArgs e)

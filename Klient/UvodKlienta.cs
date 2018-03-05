@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
-using Klient;
 using MaterialSkin;
 using MaterialSkin.Controls;
 
@@ -12,11 +11,14 @@ namespace Klient
     {
         public static ColorScheme Vzhled = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
             Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+
         public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT;
-        public static string SlozkaSouboru = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+
+        public static string SlozkaSouboru = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "Stercore soubory", "Klient");
 
-        public static IPAddress AdresaServeru = null;
+        public static IPAddress AdresaServeru;
         public static int Port = 8888;
         public static string Prezdivka;
 
@@ -55,10 +57,7 @@ namespace Klient
                     AdresaServeru = IPAddress.Parse(TxtIP.Text);
                     Prezdivka = TxtPrezdivka.Text;
 
-                    if (ChckUlozitNast.Checked)
-                    {
-                        UlozeniNastaveni();
-                    }
+                    if (ChckUlozitNast.Checked) UlozeniNastaveni();
 
                     var okno = new OknoKlienta();
                     Hide();
@@ -124,44 +123,40 @@ namespace Klient
 
         private void UlozeniNastaveni()
         {
-            using (StreamWriter Zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
+            using (var zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
             {
-                Zapis.WriteLine("IP Adresa: " + AdresaServeru);
-                Zapis.WriteLine("Port: " + Port);
-                Zapis.WriteLine("Téma: " + Tema);
-                Zapis.WriteLine("Přezdívka: " + Prezdivka);
+                zapis.WriteLine("IP Adresa: " + AdresaServeru);
+                zapis.WriteLine("Port: " + Port);
+                zapis.WriteLine("Téma: " + Tema);
+                zapis.WriteLine("Přezdívka: " + Prezdivka);
             }
         }
 
         private void NacistNastaveni()
         {
-            using (StreamReader Cteni = new StreamReader(SlozkaSouboru + "\\Nastaveni.txt"))
+            using (var cteni = new StreamReader(SlozkaSouboru + "\\Nastaveni.txt"))
             {
-                string[] Radek = Cteni.ReadLine().Split(':');
-                AdresaServeru = IPAddress.Parse(Radek[1].Trim());
-                Radek = Cteni.ReadLine().Split(':');
-                Port = int.Parse(Radek[1].Trim());
-                Radek = Cteni.ReadLine().Split(':');
+                var radek = cteni.ReadLine().Split(':');
+                AdresaServeru = IPAddress.Parse(radek[1].Trim());
+                radek = cteni.ReadLine().Split(':');
+                Port = int.Parse(radek[1].Trim());
+                radek = cteni.ReadLine().Split(':');
 
-                if (Radek[1].Trim() == "LIGHT")
-                {
+                if (radek[1].Trim() == "LIGHT")
                     Tema = MaterialSkinManager.Themes.LIGHT;
-                }
                 else
-                {
                     Tema = MaterialSkinManager.Themes.DARK;
-                }
 
-                Radek = Cteni.ReadLine().Split(':');
-                Prezdivka = Radek[1].Trim();
+                radek = cteni.ReadLine().Split(':');
+                Prezdivka = radek[1].Trim();
             }
         }
 
         private void BtnRozsNastaveni_Click(object sender, EventArgs e)
         {
-            var Okno = new RozsNastaveni();
+            var okno = new RozsNastaveni();
 
-            Okno.ShowDialog();
+            okno.ShowDialog();
 
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);

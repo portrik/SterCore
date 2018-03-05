@@ -12,17 +12,20 @@ namespace Server
     {
         public static int Port, PocetPripojeni, Kontrola;
         public static bool UlozeniHistorie;
-        public static string SlozkaSouboru = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+
+        public static string SlozkaSouboru = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "Stercore soubory", "Server");
 
         public static ColorScheme Vzhled = new ColorScheme(Primary.Red700, Primary.Red900, Primary.Red100,
             Accent.Red400, TextShade.WHITE);
+
         public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT;
 
         private IPAddress _adresaServeru;
 
         /// <summary>
-        /// Po spuštění načte nastavení.
+        ///     Po spuštění načte nastavení.
         /// </summary>
         public UvodServeru()
         {
@@ -55,10 +58,7 @@ namespace Server
                 _adresaServeru = IPAddress.Parse(txtServerIP.Text);
                 PocetPripojeni = int.Parse(txtPocetKlientu.Text); //Načte maximální počet klientů
 
-                if(ChckUlozitNast.Checked)
-                {
-                    UlozeniNastaveni();
-                }
+                if (ChckUlozitNast.Checked) UlozeniNastaveni();
 
                 var okno = new OknoServeru();
                 Hide();
@@ -79,7 +79,7 @@ namespace Server
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void UvodServeru_Load(object sender, EventArgs e)
-        { 
+        {
             if (File.Exists(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 txtServerIP.Text = _adresaServeru.ToString(); //Nastaví lokální adresu do textboxu
@@ -105,7 +105,7 @@ namespace Server
         }
 
         /// <summary>
-        /// Otevře okno s rozšířeným nastavením.
+        ///     Otevře okno s rozšířeným nastavením.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -136,12 +136,12 @@ namespace Server
         }
 
         /// <summary>
-        /// Uloží nastavení do souboru.
+        ///     Uloží nastavení do souboru.
         /// </summary>
         private void UlozeniNastaveni()
         {
             if (!SlozkaExistuje(SlozkaSouboru)) Directory.CreateDirectory(SlozkaSouboru);
-            using (StreamWriter zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
+            using (var zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 zapis.WriteLine("IP Adresa: " + _adresaServeru);
                 zapis.WriteLine("Port: " + Port);
@@ -153,39 +153,35 @@ namespace Server
         }
 
         /// <summary>
-        /// Načte nastavení z uloženého souboru. V případě poškození načte základní nastavení.
+        ///     Načte nastavení z uloženého souboru. V případě poškození načte základní nastavení.
         /// </summary>
         private void NacistNastaveni()
         {
-            using (StreamReader cteni = new StreamReader(SlozkaSouboru + "\\Nastaveni.txt"))
+            using (var cteni = new StreamReader(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 try
                 {
-                    string[] Radek = cteni.ReadLine().Split(':');
-                    _adresaServeru = IPAddress.Parse(Radek[1].Trim());
+                    var radek = cteni.ReadLine().Split(':');
+                    _adresaServeru = IPAddress.Parse(radek[1].Trim());
 
-                    Radek = cteni.ReadLine().Split(':');
-                    Port = int.Parse(Radek[1].Trim());
+                    radek = cteni.ReadLine().Split(':');
+                    Port = int.Parse(radek[1].Trim());
 
-                    Radek = cteni.ReadLine().Split(':');
+                    radek = cteni.ReadLine().Split(':');
 
-                    if (Radek[1].Trim() == "LIGHT")
-                    {
+                    if (radek[1].Trim() == "LIGHT")
                         Tema = MaterialSkinManager.Themes.LIGHT;
-                    }
                     else
-                    {
                         Tema = MaterialSkinManager.Themes.DARK;
-                    }
 
-                    Radek = cteni.ReadLine().Split(':');
-                    PocetPripojeni = int.Parse(Radek[1].Trim());
+                    radek = cteni.ReadLine().Split(':');
+                    PocetPripojeni = int.Parse(radek[1].Trim());
 
-                    Radek = cteni.ReadLine().Split(':');
-                    UlozeniHistorie = bool.Parse(Radek[1].Trim());
+                    radek = cteni.ReadLine().Split(':');
+                    UlozeniHistorie = bool.Parse(radek[1].Trim());
 
-                    Radek = cteni.ReadLine().Split(':');
-                    Kontrola = int.Parse(Radek[1].Trim());
+                    radek = cteni.ReadLine().Split(':');
+                    Kontrola = int.Parse(radek[1].Trim());
                 }
                 catch
                 {
@@ -195,7 +191,7 @@ namespace Server
         }
 
         /// <summary>
-        /// Načte základní nastavení.
+        ///     Načte základní nastavení.
         /// </summary>
         private void ZakladniNastaveni()
         {

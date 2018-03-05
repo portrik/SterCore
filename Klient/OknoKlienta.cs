@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -19,11 +18,11 @@ namespace Klient
         private readonly string _prezdivka;
 
         private TcpClient _komunikace;
+        private int _pozice;
         private NetworkStream _prijem, _odesilani = default(NetworkStream);
+        private bool _prijemSouboru;
         private Thread _prijmani;
         private byte[] _soubor;
-        private bool _prijemSouboru;
-        private int _pozice;
 
 
         public OknoKlienta()
@@ -45,7 +44,7 @@ namespace Klient
         public void Pripojeni()
         {
             _komunikace = new TcpClient();
-            bool pripojeno = false;
+            var pripojeno = false;
 
             try
             {
@@ -55,8 +54,8 @@ namespace Klient
                 {
                     _odesilani = _komunikace.GetStream(); //Nastavení proudu na adresu
                     VypisChatu.Text += DateTime.Now.ToShortTimeString() + " Připojení bylo úspěšné!";
-                    var Jmeno = Encoding.Unicode.GetBytes(_prezdivka); //Převedení přezdívky na byty
-                    _odesilani.Write(Jmeno, 0, Jmeno.Length); //Odeslání přezdívky
+                    var jmeno = Encoding.Unicode.GetBytes(_prezdivka); //Převedení přezdívky na byty
+                    _odesilani.Write(jmeno, 0, jmeno.Length); //Odeslání přezdívky
                     _odesilani.Flush(); //Vyprázdnění proudu
 
                     pripojeno = true;
@@ -71,10 +70,7 @@ namespace Klient
             }
             catch
             {
-                if (!pripojeno)
-                {
-                    MessageBox.Show("K zadanému serveru se nepodařilo připojit.", "Chyba");
-                }
+                if (!pripojeno) MessageBox.Show("K zadanému serveru se nepodařilo připojit.", "Chyba");
 
                 Close();
             }
@@ -90,7 +86,6 @@ namespace Klient
                 using (_prijem = _komunikace.GetStream())
                 {
                     while (_komunikace.Connected)
-                    {
                         if (_prijem.CanRead)
                         {
                             var data = new byte[1024 * 1024]; //Pole pro příjem sériových dat
@@ -156,10 +151,7 @@ namespace Klient
                                     break;
                                 }
                             }
-
-
                         }
-                    }
                 }
             }
             catch
@@ -187,9 +179,9 @@ namespace Klient
 
         private void UlozitSoubor(byte[] data, string druh)
         {
-            byte[] metaData = new byte[128];
+            var metaData = new byte[128];
             Array.Copy(data, 0, metaData, 0, 128);
-            string[] split = Encoding.Unicode.GetString(metaData).Split('φ');
+            var split = Encoding.Unicode.GetString(metaData).Split('φ');
             var velikostDat = Convert.ToInt32(split[2]);
             var delkaSouboru = Convert.ToInt32(split[3]);
 
@@ -376,7 +368,7 @@ namespace Klient
             var pozice = 0;
             var pocet = 0;
 
-            byte[] odesilanaData = new byte[1500];
+            var odesilanaData = new byte[1500];
 
             while (pozice < data.Length)
             {
@@ -384,19 +376,21 @@ namespace Klient
 
                 if (data.Length - pozice > 1372)
                 {
-                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" +
+                                                         nazev + "φ" + pripona);
                     Array.Copy(data, pozice, odesilanaData, 128, 1372);
                     pozice += 1372;
                 }
                 else
                 {
-                    metaData = Encoding.Unicode.GetBytes("1φ" + pocet + "φ" + (data.Length - pozice) + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + (data.Length - pozice) + "φ" +
+                                                         data.Length + "φ" + nazev + "φ" + pripona);
                     Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
                     pozice += data.Length - pozice;
                 }
 
                 Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
-                
+
                 _odesilani.Write(odesilanaData, 0, 1500);
                 _odesilani.Flush();
 
