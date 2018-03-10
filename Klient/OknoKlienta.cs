@@ -18,11 +18,10 @@ namespace Klient
         private readonly string _prezdivka;
 
         private TcpClient _komunikace;
-        private int _pozice;
         private NetworkStream _prijem, _odesilani = default(NetworkStream);
-        private bool _prijemSouboru;
         private Thread _prijmani;
-        private byte[] _soubor;
+        private byte[] _bufferSouboru = new byte[1024 * 1024 * 16];
+        private int _poziceBufferu;
 
 
         public OknoKlienta()
@@ -88,9 +87,8 @@ namespace Klient
                     while (_komunikace.Connected)
                         if (_prijem.CanRead)
                         {
-                            var data = new byte[1024 * 1024]; //Pole pro příjem sériových dat
+                            var data = new byte[1024 * 1024 * 2]; //Pole pro příjem sériových dat
                             var znak = new byte[3];
-                            var potvrzeni = Encoding.Unicode.GetBytes("9φ");
 
                             _prijem.Read(data, 0, _komunikace.ReceiveBufferSize); //Načtení sériových dat
 
@@ -105,24 +103,24 @@ namespace Klient
                                     var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
                                     var zprava = dekodovani.Split('φ');
                                     Vypsani(zprava[1] + zprava[2]);
-                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
                                     break;
                                 }
                                 case '1': //TODO: Zpracování obrázku
                                 {
-                                    UlozitSoubor(data, "Obrazek");
-                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                   PrijimaniSouboru(data, "Obrazek");
                                     break;
                                 }
                                 case '2': //TODO: Zpracování souboru
                                 {
-                                    UlozitSoubor(data, "Soubor");
-                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                    PrijimaniSouboru(data, "Soubor");
                                     break;
                                 }
                                 case '3': //TODO: Seznam klientů
                                 {
-                                    LstPripojeni.Items.Clear();
+                                    if (InvokeRequired)
+                                        Invoke((MethodInvoker) (() => LstPripojeni.Items.Clear()));
+                                    else
+                                        LstPripojeni.Items.Clear();
 
                                     var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
                                     var seznam = dekodovani.Split('φ');
@@ -131,7 +129,8 @@ namespace Klient
                                     foreach (var jmeno in jmena)
                                         if (InvokeRequired)
                                             Invoke((MethodInvoker) (() => LstPripojeni.Items.Add(jmeno)));
-                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                        else
+                                            LstPripojeni.Items.Add(jmeno);
                                     break;
                                 }
                                 case '4': //Odpojení 
@@ -142,8 +141,7 @@ namespace Klient
                                 {
                                     var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
                                     var historie = dekodovani.Split('φ');
-                                    VypisChatu.Text = historie[1].TrimEnd('\n');
-                                    _odesilani.Write(potvrzeni, 0, potvrzeni.Length);
+                                    Invoke((MethodInvoker)(() => VypisChatu.Text = historie[1].TrimEnd('\n')));
                                     break;
                                 }
                                 case '9': //Kontrola přijatých dat - klient nepřijímá
@@ -154,9 +152,10 @@ namespace Klient
                         }
                 }
             }
-            catch
+            catch(Exception x)
             {
-                MessageBox.Show("Server ukončil spojení.", "Konec spojení");
+                MessageBox.Show(x.Message);
+                //MessageBox.Show("Spojení bylo ukončeno.", "Konec spojení");
 
                 if (InvokeRequired) Invoke((MethodInvoker) (() => Close()));
 
@@ -174,61 +173,6 @@ namespace Klient
                 Invoke((MethodInvoker) (() => Vypsani(zprava)));
             else
                 VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + zprava;
-        }
-
-
-        private void UlozitSoubor(byte[] data, string druh)
-        {
-            var metaData = new byte[128];
-            Array.Copy(data, 0, metaData, 0, 128);
-            var split = Encoding.Unicode.GetString(metaData).Split('φ');
-            var velikostDat = Convert.ToInt32(split[2]);
-            var delkaSouboru = Convert.ToInt32(split[3]);
-
-            if (Convert.ToInt32(split[1]) >= 0)
-            {
-                if (!_prijemSouboru)
-                {
-                    _soubor = new byte[delkaSouboru];
-                    Array.Copy(data, 128, _soubor, 0, velikostDat - 128);
-                    _prijemSouboru = true;
-                    _pozice += velikostDat;
-                }
-                else
-                {
-                    Array.Copy(data, 128, _soubor, _pozice, velikostDat - 128);
-                    _pozice += velikostDat;
-                }
-            }
-            else
-            {
-                var slozkaDruh = Path.Combine(UvodKlienta.SlozkaSouboru, druh);
-
-                if (!UvodKlienta.SlozkaExistuje(UvodKlienta.SlozkaSouboru))
-                    Directory.CreateDirectory(UvodKlienta.SlozkaSouboru);
-
-                if (!UvodKlienta.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
-
-
-                var cesta = slozkaDruh + @"\" + split[4] + split[5].Trim('\0');
-
-                if (File.Exists(cesta))
-                {
-                    var index = 1;
-
-                    while (File.Exists(cesta))
-                    {
-                        cesta = slozkaDruh + @"\" + split[4] + "(" + index + ")" +
-                                split[5].Trim('\0');
-                        ++index;
-                    }
-                }
-
-                File.WriteAllBytes(cesta, _soubor);
-                _soubor = null;
-                _prijemSouboru = false;
-                _pozice = 0;
-            }
         }
 
         /// <summary>
@@ -287,7 +231,7 @@ namespace Klient
                     var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
                     var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    OdeslaniSouboru(obrazek, nazev, pripona, 2);
+                    OdeslaniSouboru(obrazek, nazev, pripona, 1);
                 }
                 catch (Exception x)
                 {
@@ -335,8 +279,7 @@ namespace Klient
                 LstPripojeni.ForeColor = Color.White;
             }
 
-            _prijemSouboru = false;
-            _pozice = 0;
+            _poziceBufferu = 0;
             Pripojeni();
         }
 
@@ -353,7 +296,7 @@ namespace Klient
                     var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
                     var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    OdeslaniSouboru(soubor, nazev, pripona, 1);
+                    OdeslaniSouboru(soubor, nazev, pripona, 2);
                 }
                 catch (Exception x)
                 {
@@ -363,39 +306,94 @@ namespace Klient
             }
         }
 
+        private void PrijimaniSouboru(byte[] data, string druh)
+        {
+            var hlavicka = new byte[128];
+            Array.Copy(data, 0, hlavicka, 0, 128);
+            var prevod = Encoding.Unicode.GetString(hlavicka).Split('φ');
+
+
+            if (Convert.ToInt32(prevod[1]) >= 0)
+            {
+                Array.Copy(data, 0, _bufferSouboru, _poziceBufferu, Convert.ToInt32(prevod[2]));
+                _poziceBufferu += Convert.ToInt32(prevod[2]);
+            }
+            else
+            {
+                var slozkaDruh = Path.Combine(UvodKlienta.SlozkaSouboru, druh);
+
+                if (!UvodKlienta.SlozkaExistuje(UvodKlienta.SlozkaSouboru))
+                    Directory.CreateDirectory(UvodKlienta.SlozkaSouboru);
+
+                if (!UvodKlienta.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
+                
+                var cesta = Path.Combine(UvodKlienta.SlozkaSouboru, druh) + @"\" + prevod[3] + prevod[4].Trim('\0');
+
+                if (File.Exists(cesta))
+                {
+                    var index = 1;
+
+                    while (File.Exists(cesta))
+                    {
+                        cesta = Path.Combine(UvodKlienta.SlozkaSouboru, druh) + @"\" + prevod[3] + "(" + index + ")" +
+                                prevod[4].Trim('\0');
+                        ++index;
+                    }
+                }
+
+                var soubor = new byte[Convert.ToInt32(prevod[2])];
+                Array.Copy(_bufferSouboru, 0, soubor, 0, Convert.ToInt32(prevod[2]));
+
+
+                File.WriteAllBytes(cesta, soubor);
+
+                _bufferSouboru = new byte[1024 * 1024 * 16];
+                _poziceBufferu = 0;
+            }
+        }
+
+        private void BtnZobrazitSoubory_Click(object sender, EventArgs e)
+        {
+            Process.Start(UvodKlienta.SlozkaSouboru);
+        }
+
         private void OdeslaniSouboru(byte[] data, string nazev, string pripona, int druh)
         {
+            const int velikostDat = 1024 * 512;
             var pozice = 0;
             var pocet = 0;
 
-            var odesilanaData = new byte[1500];
+            var odesilanaData = new byte[velikostDat + 128];
 
             while (pozice < data.Length)
             {
                 byte[] metaData;
 
-                if (data.Length - pozice > 1372)
+                if (data.Length - pozice > velikostDat + 128)
                 {
-                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + 1372 + "φ" + data.Length + "φ" +
-                                                         nazev + "φ" + pripona);
-                    Array.Copy(data, pozice, odesilanaData, 128, 1372);
-                    pozice += 1372;
+                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + velikostDat + "φ" + nazev + "φ" +
+                                                         pripona);
+                    Array.Copy(data, pozice, odesilanaData, 128, velikostDat);
+                    pozice += velikostDat;
                 }
                 else
                 {
                     metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + (data.Length - pozice) + "φ" +
-                                                         data.Length + "φ" + nazev + "φ" + pripona);
+                                                         nazev + "φ" + pripona);
                     Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
                     pozice += data.Length - pozice;
                 }
 
                 Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
 
-                _odesilani.Write(odesilanaData, 0, 1500);
-                _odesilani.Flush();
+                _odesilani.Write(odesilanaData, 0, odesilanaData.Length);
 
                 ++pocet;
             }
+
+            odesilanaData = Encoding.Unicode.GetBytes(druh + "φ" + -1 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+
+            _odesilani.Write(odesilanaData, 0, odesilanaData.Length);
         }
     }
 }

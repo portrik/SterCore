@@ -37,6 +37,7 @@
             this.OdeslaniObrazku = new System.Windows.Forms.PictureBox();
             this.OdeslaniSouboru = new System.Windows.Forms.PictureBox();
             this.VolbaSouboru = new System.Windows.Forms.OpenFileDialog();
+            this.BtnZobrazitSoubory = new MaterialSkin.Controls.MaterialRaisedButton();
             ((System.ComponentModel.ISupportInitialize)(this.OdeslaniObrazku)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.OdeslaniSouboru)).BeginInit();
             this.SuspendLayout();
@@ -46,7 +47,7 @@
             this.VypisKlientu.FormattingEnabled = true;
             this.VypisKlientu.Location = new System.Drawing.Point(23, 114);
             this.VypisKlientu.Name = "VypisKlientu";
-            this.VypisKlientu.Size = new System.Drawing.Size(117, 446);
+            this.VypisKlientu.Size = new System.Drawing.Size(117, 381);
             this.VypisKlientu.TabIndex = 9;
             this.VypisKlientu.TabStop = false;
             // 
@@ -135,12 +136,26 @@
             // 
             this.VolbaSouboru.FileName = "openFileDialog1";
             // 
+            // BtnZobrazitSoubory
+            // 
+            this.BtnZobrazitSoubory.Depth = 0;
+            this.BtnZobrazitSoubory.Location = new System.Drawing.Point(23, 502);
+            this.BtnZobrazitSoubory.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnZobrazitSoubory.Name = "BtnZobrazitSoubory";
+            this.BtnZobrazitSoubory.Primary = true;
+            this.BtnZobrazitSoubory.Size = new System.Drawing.Size(117, 57);
+            this.BtnZobrazitSoubory.TabIndex = 26;
+            this.BtnZobrazitSoubory.Text = "Zobrazit soubory";
+            this.BtnZobrazitSoubory.UseVisualStyleBackColor = true;
+            this.BtnZobrazitSoubory.Click += new System.EventHandler(this.BtnZobrazitSoubory_Click);
+            // 
             // OknoServeru
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(950, 620);
             this.ControlBox = false;
+            this.Controls.Add(this.BtnZobrazitSoubory);
             this.Controls.Add(this.OdeslaniObrazku);
             this.Controls.Add(this.OdeslaniSouboru);
             this.Controls.Add(this.VypisChatu);
@@ -172,6 +187,7 @@
         private System.Windows.Forms.PictureBox OdeslaniSouboru;
         private System.Windows.Forms.PictureBox OdeslaniObrazku;
         private System.Windows.Forms.OpenFileDialog VolbaSouboru;
+        private MaterialSkin.Controls.MaterialRaisedButton BtnZobrazitSoubory;
     }
 }
 

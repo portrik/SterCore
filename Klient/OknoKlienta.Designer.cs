@@ -37,6 +37,7 @@
             this.OdeslatSoubor = new System.Windows.Forms.PictureBox();
             this.OdeslaniObrazku = new System.Windows.Forms.PictureBox();
             this.VypisChatu = new System.Windows.Forms.RichTextBox();
+            this.BtnZobrazitSoubory = new MaterialSkin.Controls.MaterialRaisedButton();
             ((System.ComponentModel.ISupportInitialize)(this.OdeslatSoubor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.OdeslaniObrazku)).BeginInit();
             this.SuspendLayout();
@@ -60,7 +61,7 @@
             this.LstPripojeni.FormattingEnabled = true;
             this.LstPripojeni.Location = new System.Drawing.Point(23, 114);
             this.LstPripojeni.Name = "LstPripojeni";
-            this.LstPripojeni.Size = new System.Drawing.Size(117, 446);
+            this.LstPripojeni.Size = new System.Drawing.Size(117, 381);
             this.LstPripojeni.TabIndex = 20;
             this.LstPripojeni.TabStop = false;
             // 
@@ -135,12 +136,26 @@
             this.VypisChatu.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.VypisChatu_LinkClicked);
             this.VypisChatu.TextChanged += new System.EventHandler(this.VypisChatu_TextChanged);
             // 
+            // BtnZobrazitSoubory
+            // 
+            this.BtnZobrazitSoubory.Depth = 0;
+            this.BtnZobrazitSoubory.Location = new System.Drawing.Point(23, 502);
+            this.BtnZobrazitSoubory.MouseState = MaterialSkin.MouseState.HOVER;
+            this.BtnZobrazitSoubory.Name = "BtnZobrazitSoubory";
+            this.BtnZobrazitSoubory.Primary = true;
+            this.BtnZobrazitSoubory.Size = new System.Drawing.Size(117, 57);
+            this.BtnZobrazitSoubory.TabIndex = 25;
+            this.BtnZobrazitSoubory.Text = "Zobrazit soubory";
+            this.BtnZobrazitSoubory.UseVisualStyleBackColor = true;
+            this.BtnZobrazitSoubory.Click += new System.EventHandler(this.BtnZobrazitSoubory_Click);
+            // 
             // OknoKlienta
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(950, 620);
             this.ControlBox = false;
+            this.Controls.Add(this.BtnZobrazitSoubory);
             this.Controls.Add(this.VypisChatu);
             this.Controls.Add(this.OdeslatSoubor);
             this.Controls.Add(this.OdeslaniObrazku);
@@ -170,6 +185,7 @@
         private System.Windows.Forms.PictureBox OdeslaniObrazku;
         private System.Windows.Forms.PictureBox OdeslatSoubor;
         private System.Windows.Forms.RichTextBox VypisChatu;
+        private MaterialSkin.Controls.MaterialRaisedButton BtnZobrazitSoubory;
     }
 }
 

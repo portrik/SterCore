@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -44,6 +45,8 @@ namespace Server
             }
 
             materialSkinManager.ColorScheme = Vzhled;
+
+            _adresaServeru = LokalniAdresa();
         }
 
         /// <summary>
@@ -82,7 +85,6 @@ namespace Server
         {
             if (File.Exists(SlozkaSouboru + "\\Nastaveni.txt"))
             {
-                txtServerIP.Text = _adresaServeru.ToString(); //Nastaví lokální adresu do textboxu
                 txtPocetKlientu.Text = PocetPripojeni.ToString();
             }
             else
@@ -90,6 +92,8 @@ namespace Server
                 ZakladniNastaveni();
             }
 
+            txtServerIP.Enabled = false;
+            txtServerIP.Text = _adresaServeru.ToString();
             txtServerIP.Focus();
             txtServerIP.SelectAll();
         }
@@ -143,7 +147,6 @@ namespace Server
             if (!SlozkaExistuje(SlozkaSouboru)) Directory.CreateDirectory(SlozkaSouboru);
             using (var zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
             {
-                zapis.WriteLine("IP Adresa: " + _adresaServeru);
                 zapis.WriteLine("Port: " + Port);
                 zapis.WriteLine("Téma: " + Tema);
                 zapis.WriteLine("Počet klientů: " + PocetPripojeni);
@@ -162,9 +165,6 @@ namespace Server
                 try
                 {
                     var radek = cteni.ReadLine().Split(':');
-                    _adresaServeru = IPAddress.Parse(radek[1].Trim());
-
-                    radek = cteni.ReadLine().Split(':');
                     Port = int.Parse(radek[1].Trim());
 
                     radek = cteni.ReadLine().Split(':');
@@ -195,8 +195,6 @@ namespace Server
         /// </summary>
         private void ZakladniNastaveni()
         {
-            _adresaServeru = LokalniAdresa();
-            txtServerIP.Text = _adresaServeru.ToString();
             Port = 8888;
             PocetPripojeni = 0;
             txtPocetKlientu.Text = PocetPripojeni.ToString();
