@@ -20,8 +20,6 @@ namespace Klient
         private TcpClient _komunikace;
         private NetworkStream _prijem, _odesilani = default(NetworkStream);
         private Thread _prijmani;
-        private byte[] _bufferSouboru = new byte[1024 * 1024 * 16];
-        private int _poziceBufferu;
 
 
         public OknoKlienta()
@@ -46,25 +44,25 @@ namespace Klient
             var pripojeno = false;
 
             try
-            {
+            { 
                 _komunikace.Connect(_adresa); //Pokus o připojení na zadanou adresu a port
 
                 if (_komunikace.Connected)
                 {
-                    _odesilani = _komunikace.GetStream(); //Nastavení proudu na adresu
+                    _odesilani = _komunikace.GetStream();
                     VypisChatu.Text += DateTime.Now.ToShortTimeString() + " Připojení bylo úspěšné!";
-                    var jmeno = Encoding.Unicode.GetBytes(_prezdivka); //Převedení přezdívky na byty
-                    _odesilani.Write(jmeno, 0, jmeno.Length); //Odeslání přezdívky
-                    _odesilani.Flush(); //Vyprázdnění proudu
+                    var jmeno = Encoding.Unicode.GetBytes(_prezdivka);
+                    _odesilani.Write(jmeno, 0, jmeno.Length);
+                    _odesilani.Flush();
 
                     pripojeno = true;
 
                     _prijmani = new Thread(PrijmaniZprav)
                     {
                         IsBackground = true
-                    }; //Nastaví thread pro přijímání zpráv a nastaví jej do pozadí
+                    };
 
-                    _prijmani.Start(); //Zapnutí poslouchání zpráv
+                    _prijmani.Start();
                 }
             }
             catch
@@ -87,10 +85,10 @@ namespace Klient
                     while (_komunikace.Connected)
                         if (_prijem.CanRead)
                         {
-                            var data = new byte[1024 * 1024 * 2]; //Pole pro příjem sériových dat
+                            var data = new byte[1024 * 1024 * 2 + 128];
                             var znak = new byte[3];
 
-                            _prijem.Read(data, 0, _komunikace.ReceiveBufferSize); //Načtení sériových dat
+                            _prijem.Read(data, 0, _komunikace.ReceiveBufferSize);
 
                             Array.Copy(data, znak, 3);
 
@@ -105,17 +103,17 @@ namespace Klient
                                     Vypsani(zprava[1] + zprava[2]);
                                     break;
                                 }
-                                case '1': //TODO: Zpracování obrázku
+                                case '1': //Zpracování obrázku
                                 {
-                                   PrijimaniSouboru(data, "Obrazek");
+                                    PrijimaniSouboru(data, "Obrazek");
                                     break;
                                 }
-                                case '2': //TODO: Zpracování souboru
+                                case '2': //Zpracování souboru
                                 {
                                     PrijimaniSouboru(data, "Soubor");
                                     break;
                                 }
-                                case '3': //TODO: Seznam klientů
+                                case '3': //Seznam klientů
                                 {
                                     if (InvokeRequired)
                                         Invoke((MethodInvoker) (() => LstPripojeni.Items.Clear()));
@@ -141,7 +139,7 @@ namespace Klient
                                 {
                                     var dekodovani = Encoding.Unicode.GetString(data).TrimEnd('\0');
                                     var historie = dekodovani.Split('φ');
-                                    Invoke((MethodInvoker)(() => VypisChatu.Text = historie[1].TrimEnd('\n')));
+                                    Invoke((MethodInvoker) (() => VypisChatu.Text = historie[1].TrimEnd('\n')));
                                     break;
                                 }
                                 case '9': //Kontrola přijatých dat - klient nepřijímá
@@ -152,10 +150,11 @@ namespace Klient
                         }
                 }
             }
-            catch(Exception x)
+            catch (Exception x)
             {
+                MessageBox.Show(x.ToString());
                 MessageBox.Show(x.Message);
-                //MessageBox.Show("Spojení bylo ukončeno.", "Konec spojení");
+                MessageBox.Show("Spojení bylo ukončeno.", "Konec spojení");
 
                 if (InvokeRequired) Invoke((MethodInvoker) (() => Close()));
 
@@ -182,9 +181,9 @@ namespace Klient
         /// <param name="e"></param>
         private void BtnOdpojit_Click(object sender, EventArgs e)
         {
-            var zprava = Encoding.Unicode.GetBytes("4φ"); //Převedení zprávy na sériová data
-            _odesilani.Write(zprava, 0, zprava.Length); //Odeslání sériových dat
-            _odesilani.Flush(); //Vyprázdnění proudu
+            var zprava = Encoding.Unicode.GetBytes("4φ");
+            _odesilani.Write(zprava, 0, zprava.Length);
+            _odesilani.Flush();
 
             Close();
         }
@@ -194,15 +193,15 @@ namespace Klient
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void BtnOdeslat_Click(object sender, EventArgs e) //Odeslání zprávy
+        private void BtnOdeslat_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(TxtZprava.Text))
             {
-                var zprava = Encoding.Unicode.GetBytes("0φ" + TxtZprava.Text.Trim()); //Převedení zprávy na sériová data
-                _odesilani.Write(zprava, 0, zprava.Length); //Odeslání sériových dat
-                _odesilani.Flush(); //Vyprázdnění proudu
+                var zprava = Encoding.Unicode.GetBytes("0φ" + TxtZprava.Text.Trim());
+                _odesilani.Write(zprava, 0, zprava.Length);
+                _odesilani.Flush();
 
-                TxtZprava.Text = null; //Vyprázdnění textového pole
+                TxtZprava.Text = null;
                 TxtZprava.Focus();
                 TxtZprava.SelectAll();
             }
@@ -218,26 +217,34 @@ namespace Klient
             if (e.KeyChar == (char) Keys.Enter) BtnOdeslat_Click(null, null);
         }
 
+        /// <summary>
+        ///     Otevře obrázek a pošle jej na server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OdeslaniObrazku_Click(object sender, EventArgs e)
         {
             VolbaSouboru.Filter = "Obrázky|*.jpg;*.png;*.gif;*.jpeg;*.jpe;*.bmp";
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                var obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
+                var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                try
-                {
-                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
-                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
+                if (soubor.Length < 2048 * 1024)
+                    try
+                    {
+                        var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                        var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    OdeslaniSouboru(obrazek, nazev, pripona, 1);
-                }
-                catch (Exception x)
-                {
-                    MessageBox.Show(x.StackTrace);
-                    MessageBox.Show(x.Message);
-                }
+                        OdeslaniSouboru(soubor, nazev, pripona, 1);
+                    }
+                    catch (Exception x)
+                    {
+                        MessageBox.Show(x.StackTrace);
+                        MessageBox.Show(x.Message);
+                    }
+                else
+                    MessageBox.Show("Vybraný soubor je větší než stanovený limit (2 MB).", "Chyba");
             }
         }
 
@@ -256,12 +263,17 @@ namespace Klient
         ///     Po kliknutí na odkaz otevře webovou stránku v prohlížeči.
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e">Odkaz webové stránky</param>
+        /// <param name="e"></param>
         private void VypisChatu_LinkClicked(object sender, LinkClickedEventArgs e)
         {
             Process.Start(e.LinkText);
         }
 
+        /// <summary>
+        ///     Nastaví vzhled okna a připojí se na server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OknoKlienta_Load(object sender, EventArgs e)
         {
             if (UvodKlienta.Tema == MaterialSkinManager.Themes.LIGHT)
@@ -279,10 +291,14 @@ namespace Klient
                 LstPripojeni.ForeColor = Color.White;
             }
 
-            _poziceBufferu = 0;
             Pripojeni();
         }
 
+        /// <summary>
+        ///     Otevře soubor a pošle jej na server
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OdeslatSoubor_Click(object sender, EventArgs e)
         {
             VolbaSouboru.Filter = null;
@@ -291,107 +307,85 @@ namespace Klient
             {
                 var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                try
-                {
-                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
-                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
+                if (soubor.Length < 2048 * 1024)
+                    try
+                    {
+                        var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                        var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    OdeslaniSouboru(soubor, nazev, pripona, 2);
-                }
-                catch (Exception x)
-                {
-                    MessageBox.Show(x.StackTrace);
-                    MessageBox.Show(x.Message);
-                }
+                        OdeslaniSouboru(soubor, nazev, pripona, 2);
+                    }
+                    catch (Exception x)
+                    {
+                        MessageBox.Show(x.StackTrace);
+                        MessageBox.Show(x.Message);
+                    }
+                else
+                    MessageBox.Show("Vybraný soubor je větší než stanovený limit (2 MB).", "Chyba");
             }
         }
 
-        private void PrijimaniSouboru(byte[] data, string druh)
+        /// <summary>
+        ///     Dešifruje hlavičku souboru, uloží data a pošle je všem klientům
+        /// </summary>
+        /// <param name="data">Data souboru</param>
+        /// <param name="druh">Příznak, zda se jedná o obrázek nebo o soubor</param>
+        private static void PrijimaniSouboru(byte[] data, string druh)
         {
             var hlavicka = new byte[128];
             Array.Copy(data, 0, hlavicka, 0, 128);
             var prevod = Encoding.Unicode.GetString(hlavicka).Split('φ');
 
+            var slozkaDruh = Path.Combine(UvodKlienta.SlozkaSouboru, druh);
 
-            if (Convert.ToInt32(prevod[1]) >= 0)
+            if (!UvodKlienta.SlozkaExistuje(UvodKlienta.SlozkaSouboru))
+                Directory.CreateDirectory(UvodKlienta.SlozkaSouboru);
+
+            if (!UvodKlienta.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
+
+            var cesta = Path.Combine(UvodKlienta.SlozkaSouboru, druh) + @"\" + prevod[2] + prevod[3].Trim('\0');
+
+            if (File.Exists(cesta))
             {
-                Array.Copy(data, 0, _bufferSouboru, _poziceBufferu, Convert.ToInt32(prevod[2]));
-                _poziceBufferu += Convert.ToInt32(prevod[2]);
-            }
-            else
-            {
-                var slozkaDruh = Path.Combine(UvodKlienta.SlozkaSouboru, druh);
+                var index = 1;
 
-                if (!UvodKlienta.SlozkaExistuje(UvodKlienta.SlozkaSouboru))
-                    Directory.CreateDirectory(UvodKlienta.SlozkaSouboru);
-
-                if (!UvodKlienta.SlozkaExistuje(slozkaDruh)) Directory.CreateDirectory(slozkaDruh);
-                
-                var cesta = Path.Combine(UvodKlienta.SlozkaSouboru, druh) + @"\" + prevod[3] + prevod[4].Trim('\0');
-
-                if (File.Exists(cesta))
+                while (File.Exists(cesta))
                 {
-                    var index = 1;
-
-                    while (File.Exists(cesta))
-                    {
-                        cesta = Path.Combine(UvodKlienta.SlozkaSouboru, druh) + @"\" + prevod[3] + "(" + index + ")" +
-                                prevod[4].Trim('\0');
-                        ++index;
-                    }
+                    cesta = Path.Combine(UvodKlienta.SlozkaSouboru, druh) + @"\" + prevod[2] + "(" + index + ")" +
+                            prevod[3].Trim('\0');
+                    ++index;
                 }
-
-                var soubor = new byte[Convert.ToInt32(prevod[2])];
-                Array.Copy(_bufferSouboru, 0, soubor, 0, Convert.ToInt32(prevod[2]));
-
-
-                File.WriteAllBytes(cesta, soubor);
-
-                _bufferSouboru = new byte[1024 * 1024 * 16];
-                _poziceBufferu = 0;
             }
+
+            var soubor = new byte[Convert.ToInt32(prevod[1])];
+            Array.Copy(data, 128, soubor, 0, Convert.ToInt32(prevod[1]));
+
+            File.WriteAllBytes(cesta, soubor);
         }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZobrazitSoubory_Click(object sender, EventArgs e)
         {
             Process.Start(UvodKlienta.SlozkaSouboru);
         }
 
+        /// <summary>
+        ///     Odešle soubor na server
+        /// </summary>
+        /// <param name="data">Data souboru</param>
+        /// <param name="nazev">Název souboru</param>
+        /// <param name="pripona">Přípona souboru</param>
+        /// <param name="druh">Příznak, zda se jedná o soubor nebo obrázek</param>
         private void OdeslaniSouboru(byte[] data, string nazev, string pripona, int druh)
         {
-            const int velikostDat = 1024 * 512;
-            var pozice = 0;
-            var pocet = 0;
+            var hlavicka = Encoding.Unicode.GetBytes(druh + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+            var odesilanaData = new byte[2048 * 2048 + 128];
 
-            var odesilanaData = new byte[velikostDat + 128];
-
-            while (pozice < data.Length)
-            {
-                byte[] metaData;
-
-                if (data.Length - pozice > velikostDat + 128)
-                {
-                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + velikostDat + "φ" + nazev + "φ" +
-                                                         pripona);
-                    Array.Copy(data, pozice, odesilanaData, 128, velikostDat);
-                    pozice += velikostDat;
-                }
-                else
-                {
-                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + (data.Length - pozice) + "φ" +
-                                                         nazev + "φ" + pripona);
-                    Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
-                    pozice += data.Length - pozice;
-                }
-
-                Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
-
-                _odesilani.Write(odesilanaData, 0, odesilanaData.Length);
-
-                ++pocet;
-            }
-
-            odesilanaData = Encoding.Unicode.GetBytes(druh + "φ" + -1 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+            Array.Copy(hlavicka, 0, odesilanaData, 0, hlavicka.Length);
+            Array.Copy(data, 0, odesilanaData, 128, data.Length);
 
             _odesilani.Write(odesilanaData, 0, odesilanaData.Length);
         }

@@ -22,18 +22,17 @@ namespace Server
             _seznamKlientu = new Dictionary<string, TcpClient>(); //Seznam připojených uživatelů a jejich adres
 
         private Thread _behServeru; //Thread pro běh serveru na pozadí nezávisle na hlavním okně
+        private bool _odesilani;
         private int _pocetPripojeni; //Počet aktuálně připojených uživatelů
         private TcpListener _prichoziKomunikace; //Poslouchá příchozí komunikaci a žádosti i připojení
-        private byte[] _bufferSouboru = new byte[1024 * 1024* 16]; //Pole pro příjem souborů
-        private int _poziceBufferu;
 
         private bool _stop; //Proměná pro zastavení běhu serveru
-        private bool _odesilani;
 
         public OknoServeru()
         {
             InitializeComponent();
 
+            //Nastavení vzhledu
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = UvodServeru.Tema;
@@ -53,16 +52,18 @@ namespace Server
                 _prichoziKomunikace.Start();
 
                 while (!_stop)
-                    if (_prichoziKomunikace.Pending() && MaximalniPocet())
+                    if (_prichoziKomunikace.Pending() && MaximalniPocet()
+                    ) //Pokud není přesažen povolený počet klientů a existuje žádost o připojení, server ji zpracuje
                     {
-                        var klient = _prichoziKomunikace.AcceptTcpClient(); //Přijme žádost o připojení
+                        var klient = _prichoziKomunikace.AcceptTcpClient();
                         ++_pocetPripojeni;
-                        var byteJmeno = new byte[1024 * 1024 * 2]; //Bytové pole pro načtení jména
-                        var cteniJmena = klient.GetStream(); //Připojení načítání na správný socket
-                        cteniJmena.Read(byteJmeno, 0, klient.ReceiveBufferSize); //Načtení sériových dat
+                        var byteJmeno = new byte[1024 * 1024 * 2];
+                        var cteniJmena = klient.GetStream();
+                        cteniJmena.Read(byteJmeno, 0, klient.ReceiveBufferSize);
                         var jmeno = Encoding.Unicode.GetString(byteJmeno)
-                            .TrimEnd('\0'); //Dekódování dat a vymazání prázdných znaků
+                            .TrimEnd('\0');
 
+                        //Pokud má klient duplikátní jméno, je okamžitě odpojen, v opačném případě je spuštěn nový thread
                         if (KontrolaJmena(jmeno))
                         {
                             _seznamKlientu.Add(jmeno, klient);
@@ -105,38 +106,44 @@ namespace Server
         /// </summary>
         /// <param name="jmeno">Jméno klienta</param>
         /// <param name="pripojeni">Připojení klienta</param>
-        private void ObsluhaKlienta(string jmeno, TcpClient pripojeni) 
+        private void ObsluhaKlienta(string jmeno, TcpClient pripojeni)
         {
-            using (var cteni = pripojeni.GetStream()) 
+            using (var cteni = pripojeni.GetStream())
             {
                 try
                 {
                     while (!_stop)
                     {
-                        var hrubaData = new byte[1024 * 1024 * 2];
-                        cteni.Read(hrubaData, 0, pripojeni.ReceiveBufferSize); 
+                        var hrubaData = new byte[1024 * 1024 * 2 + 128];
+                        cteni.Read(hrubaData, 0, pripojeni.ReceiveBufferSize);
 
                         var znacka = new byte[4];
-                        Array.Copy(hrubaData, znacka, 4); 
+                        Array.Copy(hrubaData, znacka, 4);
                         var uprava = Encoding.Unicode.GetString(znacka);
 
+                        //Podle znaku v hlavičce dat jsou data zpracována
                         switch (uprava[0])
                         {
                             case '0': //Běžná zpráva
                             {
-                                var data = Encoding.Unicode.GetString(hrubaData).TrimEnd('\0');
-                                var zprava = data.Split('φ');
+                                var zprava = Encoding.Unicode.GetString(hrubaData).TrimEnd('\0').Split('φ');
                                 Vysilani(jmeno, zprava[1]);
                                 break;
                             }
                             case '1': //Obrázek
                             {
-                                PrijmaniSouboru(hrubaData, jmeno, "Obrazek");
+                                var pomocna = new byte[128];
+                                Array.Copy(hrubaData, 0, pomocna, 0, 128);
+                                var hlavicka = Encoding.Unicode.GetString(pomocna).TrimEnd('\0').Split('φ');
+                                ZpracovaniSouboru(hrubaData, hlavicka[2], hlavicka[3], jmeno, "Obrazek");
                                 break;
                             }
                             case '2': //Soubor
                             {
-                                PrijmaniSouboru(hrubaData, jmeno, "Soubor");
+                                var pomocna = new byte[128];
+                                Array.Copy(hrubaData, 0, pomocna, 0, 128);
+                                var hlavicka = Encoding.Unicode.GetString(pomocna).TrimEnd('\0').Split('φ');
+                                ZpracovaniSouboru(hrubaData, hlavicka[2], hlavicka[3], jmeno, "Soubor");
                                 break;
                             }
                             case '3': //Seznam klientů - server nepřijímá
@@ -167,15 +174,15 @@ namespace Server
         /// </summary>
         /// <param name="tvurce">Jméno odesílatele</param>
         /// <param name="text">Obsah zprávy</param>
-        private void Vysilani(string tvurce, string text) //Odeslání zprávy všem klientům
+        private void Vysilani(string tvurce, string text)
         {
             try
             {
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + tvurce + ": " +
-                                       text)); //Vypíše zprávu na serveru
-                text = "0φ" + tvurce + "φ: " + text; //Naformátuje zprávu před odesláním                
-                var data = Encoding.Unicode.GetBytes(text); //Převede zprávu na byty
+                                       text));
+                text = "0φ" + tvurce + "φ: " + text;
+                var data = Encoding.Unicode.GetBytes(text);
 
                 foreach (var klient in _seznamKlientu)
                 {
@@ -203,8 +210,8 @@ namespace Server
 
                 foreach (var klient in _seznamKlientu) jmena += klient.Key + ",";
 
-                var seznam = "3φ" + jmena; //Naformátuje zprávu před odesláním                
-                var data = Encoding.Unicode.GetBytes(seznam); //Převede zprávu na byty
+                var seznam = "3φ" + jmena;
+                var data = Encoding.Unicode.GetBytes(seznam);
 
                 foreach (var klient in _seznamKlientu)
                 {
@@ -222,11 +229,11 @@ namespace Server
         }
 
         /// <summary>
-        ///     Ukončí všechna připojení, vypne server a vrtáí se na úvodní form.
+        ///     Ukončí všechna připojení, vypne server a vrtáí se na úvodní okno.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void BtnServerStop_Click(object sender, EventArgs e) //Ukončení běhu serveru
+        private void BtnServerStop_Click(object sender, EventArgs e)
         {
             _stop = true;
 
@@ -242,7 +249,7 @@ namespace Server
         /// </summary>
         /// <param name="jmeno">Jméno ke kontrole</param>
         /// <returns>Jméno je v pořádku</returns>
-        private bool KontrolaJmena(string jmeno) //Zkontroluje, zda se jméno již nevyskytuje
+        private bool KontrolaJmena(string jmeno)
         {
             foreach (var klient in _seznamKlientu)
                 if (klient.Key == jmeno)
@@ -254,7 +261,7 @@ namespace Server
         /// <summary>
         ///     Odpojí klienta ze serveru.
         /// </summary>
-        /// <param name="jmeno">Jméno klienta</param>
+        /// <param name="jmeno">Jméno odebíraného klienta</param>
         private void OdebratKlienta(string jmeno)
         {
             --_pocetPripojeni;
@@ -270,7 +277,7 @@ namespace Server
                 _seznamKlientu.Remove(jmeno);
 
             if (InvokeRequired)
-                Invoke((MethodInvoker)(() => AktualizaceSeznamu()));
+                Invoke((MethodInvoker) (() => AktualizaceSeznamu()));
             else
                 AktualizaceSeznamu();
 
@@ -280,7 +287,7 @@ namespace Server
         /// <summary>
         ///     Odpojí klienta ze serveru bez zásahu do seznamů.
         /// </summary>
-        /// <param name="klient">Připojení klienta</param>
+        /// <param name="klient">Připojení odebíraného klienta</param>
         private void OdebratKlienta(TcpClient klient)
         {
             --_pocetPripojeni;
@@ -341,6 +348,7 @@ namespace Server
             _stop = false;
             _prichoziKomunikace = new TcpListener(_ipAdresa);
 
+            //Nastaví vzhled podle zvoleného nastavení
             if (UvodServeru.Tema == MaterialSkinManager.Themes.LIGHT)
             {
                 VypisChatu.BackColor = Color.White;
@@ -356,17 +364,17 @@ namespace Server
                 VypisKlientu.ForeColor = Color.White;
             }
 
+            //Pokud existuje soubor s historií, načte jej do okna
             if (File.Exists(UvodServeru.SlozkaSouboru + "\\Historie.txt"))
                 VypisChatu.LoadFile(UvodServeru.SlozkaSouboru + "\\Historie.txt",
                     RichTextBoxStreamType.UnicodePlainText);
 
-            _behServeru = new Thread(PrijmaniKlientu)
+            _behServeru = new Thread(PrijmaniKlientu) //Spustí přijímání a obsluhu klientů
             {
                 IsBackground = true
             };
 
             _odesilani = true;
-            _poziceBufferu = 0;
             _behServeru.Start();
         }
 
@@ -400,9 +408,9 @@ namespace Server
         {
             Process.Start(e.LinkText);
         }
-        
+
         /// <summary>
-        /// Vybere obrázek k odeslání a pošle ho všem klientům.
+        ///     Vybere obrázek k odeslání a pošle ho všem klientům.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -414,23 +422,26 @@ namespace Server
             {
                 var obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                try
-                {
-                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
-                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
+                if (obrazek.Length < 2048 * 1024)
+                    try
+                    {
+                        var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                        var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    ZpracovaniSouboru(obrazek, nazev, pripona, "SERVER", "Obrazek");
-                }
-                catch (Exception x)
-                {
-                    MessageBox.Show(x.StackTrace);
-                    MessageBox.Show(x.Message);
-                }
+                        ZpracovaniSouboru(obrazek, nazev, pripona, "SERVER", "Obrazek");
+                    }
+                    catch (Exception x)
+                    {
+                        MessageBox.Show(x.StackTrace);
+                        MessageBox.Show(x.Message);
+                    }
+                else
+                    MessageBox.Show("Vybraný soubor je větší než stanovený limit (2 MB).", "Chyba");
             }
         }
 
         /// <summary>
-        /// Vybere soubor k odeslání a pošle ho všem klientům.
+        ///     Vybere soubor k odeslání a pošle ho všem klientům.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -440,68 +451,47 @@ namespace Server
 
             if (VolbaSouboru.ShowDialog() == DialogResult.OK)
             {
-                var soubor = File.ReadAllBytes(VolbaSouboru.FileName);
+                var obrazek = File.ReadAllBytes(VolbaSouboru.FileName);
 
-                try
-                {
-                    var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
-                    var pripona = Path.GetExtension(VolbaSouboru.FileName);
+                if (obrazek.Length < 2048 * 1024)
+                    try
+                    {
+                        var nazev = Path.GetFileNameWithoutExtension(VolbaSouboru.FileName);
+                        var pripona = Path.GetExtension(VolbaSouboru.FileName);
 
-                    ZpracovaniSouboru(soubor, nazev, pripona, "SERVER", "Soubor");
-                }
-                catch (Exception x)
-                {
-                    MessageBox.Show(x.StackTrace);
-                    MessageBox.Show(x.Message);
-                }
+                        ZpracovaniSouboru(obrazek, nazev, pripona, "SERVER", "Soubor");
+                    }
+                    catch (Exception x)
+                    {
+                        MessageBox.Show(x.StackTrace);
+                        MessageBox.Show(x.Message);
+                    }
+                else
+                    MessageBox.Show("Vybraný soubor je větší než stanovený limit (2 MB).", "Chyba");
             }
         }
 
+        /// <summary>
+        ///     Uloží data souboru a pošle je všem klientům
+        /// </summary>
+        /// <param name="data">Data souboru</param>
+        /// <param name="nazev">Název souboru</param>
+        /// <param name="pripona">Přípona souboru</param>
+        /// <param name="odesilatel">Odesílatel souboru</param>
+        /// <param name="znak">Příznak, zda se jedná o obrázek nebo o soubor</param>
         private void ZpracovaniSouboru(byte[] data, string nazev, string pripona, string odesilatel, string znak)
         {
-            const int velikostDat = 1024 * 512;
-            var pozice = 0;
-            var pocet = 0;
             var druh = 1;
 
-            if (znak == "Soubor")
-            {
-                druh = 2;
-            }
+            if (znak == "Soubor") druh = 2;
 
             UlozitSoubor(data, nazev, pripona, znak);
 
-            var odesilanaData = new byte[velikostDat + 128];
+            var hlavicka = Encoding.Unicode.GetBytes(druh + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+            var odesilanaData = new byte[2048 * 2048 + 128];
 
-            while (pozice < data.Length)
-            {
-                byte[] metaData;
-
-                if (data.Length - pozice > velikostDat + 128)
-                {
-                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + velikostDat + "φ" + nazev + "φ" + pripona);
-                    Array.Copy(data, pozice, odesilanaData, 128, velikostDat);
-                    pozice += velikostDat;
-                }
-                else
-                {
-                    metaData = Encoding.Unicode.GetBytes(druh + "φ" + pocet + "φ" + (data.Length - pozice) + "φ" + nazev + "φ" + pripona);
-                    Array.Copy(data, pozice, odesilanaData, 128, data.Length - pozice);
-                    pozice += data.Length - pozice;
-                }
-
-                Array.Copy(metaData, 0, odesilanaData, 0, metaData.Length);
-
-                foreach (var klient in _seznamKlientu)
-                {
-                    var odeslani = new Thread(() => OdeslaniDat(odesilanaData, klient.Key));
-                    odeslani.Start();
-                }
-
-                ++pocet;
-            }
-
-            odesilanaData = Encoding.Unicode.GetBytes("1φ" + -1 + "φ" + data.Length + "φ" + nazev + "φ" + pripona);
+            Array.Copy(hlavicka, 0, odesilanaData, 0, hlavicka.Length);
+            Array.Copy(data, 0, odesilanaData, 128, data.Length);
 
             foreach (var klient in _seznamKlientu)
             {
@@ -512,30 +502,8 @@ namespace Server
             Vysilani(odesilatel, "Poslal obrázek " + nazev + pripona);
         }
 
-        private void PrijmaniSouboru(byte[] data, string jmeno, string druh)
-        {
-            var hlavicka = new byte[128];
-            Array.Copy(data, 0, hlavicka, 0, 128);
-            var prevod = Encoding.Unicode.GetString(hlavicka).Split('φ');
-
-
-            if (Convert.ToInt32(prevod[1]) >= 0)
-            {
-                Array.Copy(data, 0, _bufferSouboru, _poziceBufferu, Convert.ToInt32(prevod[2]));
-                _poziceBufferu += Convert.ToInt32(prevod[2]);
-            }
-            else
-            {
-                var pole = new byte[Convert.ToInt32(prevod[2])];
-                Array.Copy(_bufferSouboru, 0, pole, 0, Convert.ToInt32(prevod[2]));
-                ZpracovaniSouboru(pole, prevod[3], prevod[4], jmeno, druh);
-                _bufferSouboru = new byte[1024 * 1024 * 16];
-                _poziceBufferu = 0;
-            }
-        }
-
         /// <summary>
-        /// Uloží soubor na disk do příslušné složky.
+        ///     Uloží soubor na disk do příslušné složky.
         /// </summary>
         /// <param name="data">Pole bajtů souboru</param>
         /// <param name="nazev">Název souboru</param>
@@ -580,7 +548,7 @@ namespace Server
         }
 
         /// <summary>
-        /// Odešela zadaná data klientovi.
+        ///     Odešela zadaná data klientovi.
         /// </summary>
         /// <param name="data">Odesílaná data</param>
         /// <param name="jmeno">Jméno klienta</param>
@@ -588,11 +556,10 @@ namespace Server
         {
             try
             {
-                while (!_odesilani)
-                {
-                    Thread.Sleep(UvodServeru.Kontrola);
-                }
+                //Server počká, než je možné znovu odesílat data
+                while (!_odesilani) Thread.Sleep(UvodServeru.Kontrola);
 
+                //Pokud se server nevypíná, pošle zadaná data všem klientům.
                 if (!_stop)
                 {
                     _odesilani = false;
@@ -613,6 +580,11 @@ namespace Server
             }
         }
 
+        /// <summary>
+        ///     Otevře složku se soubory
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZobrazitSoubory_Click(object sender, EventArgs e)
         {
             Process.Start(UvodServeru.SlozkaSouboru);

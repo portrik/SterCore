@@ -10,13 +10,13 @@ namespace Klient
     public partial class UvodKlienta : MaterialForm
     {
         public static ColorScheme Vzhled = new ColorScheme(Primary.LightBlue400, Primary.LightBlue900,
-            Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE);
+            Primary.Cyan100, Accent.LightBlue400, TextShade.WHITE); //Barvy oken
 
-        public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT;
+        public static MaterialSkinManager.Themes Tema = MaterialSkinManager.Themes.LIGHT; //Vzhled oken
 
         public static string SlozkaSouboru = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "Stercore soubory", "Klient");
+            "Stercore soubory", "Klient"); //Cesta ke složce se soubory
 
         public static IPAddress AdresaServeru;
         public static int Port = 8888;
@@ -121,6 +121,9 @@ namespace Klient
             if (e.KeyChar == (char) Keys.Enter) BtnPripojit_Click(null, null);
         }
 
+        /// <summary>
+        ///     Uloží nastavení
+        /// </summary>
         private void UlozeniNastaveni()
         {
             using (var zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
@@ -132,6 +135,10 @@ namespace Klient
             }
         }
 
+        /// <summary>
+        ///     Nastaví program podle uložených nastavení.
+        ///     Pokud nastavení nelze načíst, načte základní hodnoty.
+        /// </summary>
         private void NacistNastaveni()
         {
             using (var cteni = new StreamReader(SlozkaSouboru + "\\Nastaveni.txt"))
@@ -152,6 +159,11 @@ namespace Klient
             }
         }
 
+        /// <summary>
+        ///     Otevře okno s rozšířeným nastavením
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnRozsNastaveni_Click(object sender, EventArgs e)
         {
             var okno = new RozsNastaveni();

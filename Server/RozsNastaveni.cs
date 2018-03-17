@@ -21,6 +21,11 @@ namespace Server
                 RadioTm.Checked = true;
         }
 
+        /// <summary>
+        ///     Uloží zadaná nastavení a zavře okno.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnPotvrdit_Click(object sender, EventArgs e)
         {
             try
@@ -52,6 +57,11 @@ namespace Server
             }
         }
 
+        /// <summary>
+        ///     Po načtení okna načte hodnoty proměných
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RozsNastaveni_Load(object sender, EventArgs e)
         {
             txtServerPort.Text = UvodServeru.Port.ToString();
@@ -59,6 +69,11 @@ namespace Server
             TxtKontrola.Text = UvodServeru.Kontrola.ToString();
         }
 
+        /// <summary>
+        ///     Zavře okno bez uložení nastavení
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZrusit_Click(object sender, EventArgs e)
         {
             Close();

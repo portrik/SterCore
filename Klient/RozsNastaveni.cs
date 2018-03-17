@@ -21,6 +21,11 @@ namespace Klient
                 RadioTm.Checked = true;
         }
 
+        /// <summary>
+        ///     Potvrdí zadaná nastavení a vypne okno.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnPotvrdit_Click(object sender, EventArgs e)
         {
             try
@@ -50,11 +55,21 @@ namespace Klient
             }
         }
 
+        /// <summary>
+        ///     Po otevření okna načte hodnotu portu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RozsNastaveni_Load(object sender, EventArgs e)
         {
             TxtPort.Text = UvodKlienta.Port.ToString();
         }
 
+        /// <summary>
+        ///     Zavře okno bez uložení změn.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BtnZrusit_Click(object sender, EventArgs e)
         {
             Close();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -84,13 +83,9 @@ namespace Server
         private void UvodServeru_Load(object sender, EventArgs e)
         {
             if (File.Exists(SlozkaSouboru + "\\Nastaveni.txt"))
-            {
                 txtPocetKlientu.Text = PocetPripojeni.ToString();
-            }
             else
-            {
                 ZakladniNastaveni();
-            }
 
             txtServerIP.Enabled = false;
             txtServerIP.Text = _adresaServeru.ToString();
