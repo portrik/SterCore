@@ -126,6 +126,10 @@ namespace Klient
         /// </summary>
         private void UlozeniNastaveni()
         {
+            if (!SlozkaExistuje(SlozkaSouboru))
+            {
+                Directory.CreateDirectory(SlozkaSouboru);
+            }
             using (var zapis = new StreamWriter(SlozkaSouboru + "\\Nastaveni.txt"))
             {
                 zapis.WriteLine("IP Adresa: " + AdresaServeru);
