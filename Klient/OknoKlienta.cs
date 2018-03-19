@@ -152,8 +152,6 @@ namespace Klient
             }
             catch (Exception x)
             {
-                MessageBox.Show(x.ToString());
-                MessageBox.Show(x.Message);
                 MessageBox.Show("Spojení bylo ukončeno.", "Konec spojení");
 
                 if (InvokeRequired) Invoke((MethodInvoker) (() => Close()));

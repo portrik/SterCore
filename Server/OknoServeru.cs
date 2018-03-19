@@ -96,7 +96,7 @@ namespace Server
                     Invoke((MethodInvoker) (() =>
                         VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                     Invoke((MethodInvoker) (() =>
-                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+                        VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message + "\n"));
                 }
             }
         }
@@ -179,8 +179,8 @@ namespace Server
             try
             {
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + tvurce + ": " +
-                                       text));
+                    VypisChatu.Text += DateTime.Now.ToShortTimeString() + " " + tvurce + ": " +
+                                       text + "\n"));
                 text = "0φ" + tvurce + "φ: " + text;
                 var data = Encoding.Unicode.GetBytes(text);
 
@@ -195,7 +195,7 @@ namespace Server
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message + "\n"));
             }
         }
 
@@ -224,7 +224,7 @@ namespace Server
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message + "\n"));
             }
         }
 
@@ -576,7 +576,7 @@ namespace Server
                 Invoke((MethodInvoker) (() =>
                     VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + "Objevila se chyba:"));
                 Invoke((MethodInvoker) (() =>
-                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message));
+                    VypisChatu.Text += "\n" + DateTime.Now.ToShortTimeString() + " " + x.Message + "\n"));
             }
         }
 
