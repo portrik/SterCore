@@ -142,10 +142,6 @@ namespace Klient
                                     Invoke((MethodInvoker) (() => VypisChatu.Text = historie[1].TrimEnd('\n')));
                                     break;
                                 }
-                                case '9': //Kontrola přijatých dat - klient nepřijímá
-                                {
-                                    break;
-                                }
                             }
                         }
                 }
